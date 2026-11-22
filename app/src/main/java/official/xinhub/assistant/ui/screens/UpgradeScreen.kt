@@ -149,7 +149,7 @@ fun UpgradeScreen(hub: HubState, onBack: () -> Unit, onApply: (Job) -> Unit) {
         ) {
             if (filter != "second" && featured != null) {
                 item(key = "featured-${featured.id}") {
-                    FeaturedUpgrade(featured) { selected = it }
+                    FeaturedUpgrade(featured) { selected = featured }
                 }
             }
 
@@ -178,7 +178,7 @@ fun UpgradeScreen(hub: HubState, onBack: () -> Unit, onApply: (Job) -> Unit) {
                 }
             } else {
                 items(shown, key = { it.id }) { entry ->
-                    UpgradeRow(entry) { selected = it }
+                    UpgradeRow(entry) { selected = entry }
                 }
             }
             item(key = "bottom") { Spacer(Modifier.height(16.dp)) }
