@@ -42,9 +42,9 @@ object GameControl {
     fun stop(storage: Storage, ctx: Context): Boolean {
         val packages = installed(ctx)
         if (packages.isEmpty()) return false
-        val shell = storage.shell ?: return false
+        val runner = storage.shell ?: return false
         val cmd = packages.joinToString("; ") { "am force-stop $it" }
-        val result = shell(cmd) ?: return false
+        val result = runner(cmd) ?: return false
         return result.first == 0
     }
 
