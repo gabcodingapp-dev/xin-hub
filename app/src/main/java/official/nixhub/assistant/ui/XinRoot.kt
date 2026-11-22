@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AutoAwesome
@@ -89,6 +90,7 @@ import official.nixhub.assistant.ui.theme.Panel
 import official.nixhub.assistant.ui.theme.PanelHi
 import official.nixhub.assistant.ui.theme.TextHi
 import official.nixhub.assistant.ui.theme.TextLow
+import official.nixhub.assistant.ui.theme.TextMid
 
 private data class Tab(val route: String, val label: String, val icon: ImageVector)
 
