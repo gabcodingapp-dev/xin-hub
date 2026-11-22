@@ -5,7 +5,7 @@ app, signed with the repo keystore, assembled by GitHub Actions on every push.
 
 ```
 package   official.nixhub.assistant
-version   1.1.0 (2)
+version   1.2.0 (3)
 minSdk    26
 target    35
 ```
