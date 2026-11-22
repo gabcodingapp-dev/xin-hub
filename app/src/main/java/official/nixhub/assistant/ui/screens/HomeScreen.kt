@@ -48,6 +48,7 @@ import official.nixhub.assistant.Xin
 import official.nixhub.assistant.data.Config
 import official.nixhub.assistant.data.Job
 import official.nixhub.assistant.data.LoadState
+import official.nixhub.assistant.data.toJob
 import official.nixhub.assistant.ui.HubState
 import official.nixhub.assistant.ui.components.GlassCard
 import official.nixhub.assistant.ui.components.NetImage
@@ -222,7 +223,7 @@ fun HomeScreen(
                                 .width(128.dp)
                                 .clip(RoundedCornerShape(16.dp))
                                 .clickable {
-                                    val job = official.nixhub.assistant.data.run { item.toJob(catalog.skins) }
+                                    val job = item.toJob(catalog.skins)
                                     if (job != null) onApply(job) else hub.say("${item.name} is not injectable yet")
                                 }
                         ) {

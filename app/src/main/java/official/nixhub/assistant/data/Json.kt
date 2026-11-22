@@ -51,6 +51,7 @@ object Json {
             id = c.optString("id"),
             title = c.optString("title"),
             description = c.optString("description"),
+            kind = c.optString("kind", "effect"),
             items = c.arr("items").objects().map { o ->
                 EffectItem(
                     id = o.optString("id"),

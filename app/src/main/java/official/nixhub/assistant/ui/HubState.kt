@@ -123,7 +123,9 @@ class HubState(private val ctx: Context) {
         if (progress.running) return
         progress = Injector.Progress(running = true, label = "downloading")
         scope.launch {
-            val result = Xin.injector.apply(target, job) { progress = it }
+            val mirrored = Xin.catalog.mirrorUrl(job.id)
+            val source = if (mirrored != null) job.copy(script = mirrored) else job
+            val result = Xin.injector.apply(target, source) { progress = it }
             progress = result
             if (result.error != null) {
                 message = result.error

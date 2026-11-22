@@ -16,6 +16,38 @@ class CatalogStore(private val ctx: Context) {
     var version: String = ""
         private set
 
+    private var mirrorBase: String = ""
+    private var mirrorItems: Map<String, String> = emptyMap()
+
+    /** Mirrored release asset for a catalog id, if the mirror already has it. */
+    fun mirrorUrl(id: String): String? {
+        val name = mirrorItems[id] ?: return null
+        if (mirrorBase.isBlank()) return null
+        return "$mirrorBase/$name"
+    }
+
+    private fun loadMirror(text: String?) {
+        if (text.isNullOrBlank()) return
+        try {
+            val root = JSONObject(text)
+            val base = root.optString("base")
+            val items = root.optJSONObject("items") ?: return
+            val map = HashMap<String, String>(items.length())
+            val keys = items.keys()
+            while (keys.hasNext()) {
+                val key = keys.next()
+                val entry = items.optJSONObject(key) ?: continue
+                val tag = entry.optString("tag")
+                val name = entry.optString("name")
+                if (tag.isNotBlank() && name.isNotBlank()) map[key] = "$tag/$name"
+            }
+            mirrorBase = base
+            mirrorItems = map
+        } catch (t: Throwable) {
+            // A broken mirror index must never take the catalog down.
+        }
+    }
+
     private val cacheDir: File get() = File(ctx.filesDir, "catalog").apply { mkdirs() }
 
     private fun readBundled(name: String): String? = try {
@@ -51,6 +83,7 @@ class CatalogStore(private val ctx: Context) {
     }
 
     suspend fun load(): LoadState = withContext(Dispatchers.IO) {
+        loadMirror(readCache("mirror.json"))
         val cached = parse { readCache(it) }
         val catalog = cached ?: parse { readBundled(it) }
         val source = if (cached != null) "cache" else "bundled"
@@ -80,6 +113,7 @@ class CatalogStore(private val ctx: Context) {
             val bytes = Net.get(url) ?: continue
             staged[key] = bytes
         }
+        Net.get(Config.ASSETS_BASE + "catalog/mirror.json")?.let { staged["mirror"] = it }
         if (staged["skins"] == null || staged["effects"] == null) return@withContext false
 
         for ((key, bytes) in staged) {
@@ -93,6 +127,7 @@ class CatalogStore(private val ctx: Context) {
         }
         File(cacheDir, "version").writeText(remoteVersion)
 
+        loadMirror(readCache("mirror.json"))
         val fresh = parse { readCache(it) } ?: return@withContext false
         current = fresh
         version = remoteVersion

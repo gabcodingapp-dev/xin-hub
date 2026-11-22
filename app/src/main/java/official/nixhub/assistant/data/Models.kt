@@ -37,6 +37,7 @@ data class EffectCategory(
     val id: String,
     val title: String,
     val description: String,
+    val kind: String,
     val items: List<EffectItem>,
 )
 
