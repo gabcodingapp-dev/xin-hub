@@ -58,6 +58,7 @@ import official.nixhub.assistant.ui.components.SearchField
 import official.nixhub.assistant.ui.components.pressable
 import official.nixhub.assistant.ui.theme.Cyan
 import official.nixhub.assistant.ui.theme.Line
+import official.nixhub.assistant.ui.theme.Void
 import official.nixhub.assistant.ui.theme.Panel
 import official.nixhub.assistant.ui.theme.PanelHi
 import official.nixhub.assistant.ui.theme.TextHi
