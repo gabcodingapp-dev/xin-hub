@@ -156,30 +156,25 @@ private fun HeroTile(hero: Hero, onClick: () -> Unit) {
             .aspectRatio(0.72f)
             .clip(RoundedCornerShape(10.dp))
             .background(Panel)
-            .border(1.dp, Line, RoundedCornerShape(10.dp))
-            .clickable { onClick() },
+            .clickable(onClick = onClick),
     ) {
         NetImage(
             url = hero.head,
             modifier = Modifier.fillMaxSize(),
-            targetWidth = 180,
-            targetHeight = 250,
-        )
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(HERO_SCRIM),
+            targetWidth = 150,
+            targetHeight = 200,
         )
         Column(
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .fillMaxWidth()
-                .padding(horizontal = 6.dp, vertical = 5.dp),
+                .background(Color(0xCC080B10))
+                .padding(horizontal = 6.dp, vertical = 4.dp),
         ) {
             Text(
                 hero.name,
                 color = TextHi,
-                fontSize = 10.5.sp,
+                fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -187,7 +182,7 @@ private fun HeroTile(hero: Hero, onClick: () -> Unit) {
             Text(
                 hero.roles.firstOrNull()?.uppercase() ?: "HERO",
                 color = Cyan,
-                fontSize = 8.sp,
+                fontSize = 7.5.sp,
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
             )

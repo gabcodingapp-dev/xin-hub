@@ -114,6 +114,8 @@ fun NetImage(
         ImageRequest.Builder(context)
             .data(url)
             .size(targetWidth, targetHeight)
+            .precision(coil.size.Precision.INEXACT)
+            .bitmapConfig(android.graphics.Bitmap.Config.RGB_565)
             .build()
     }
     AsyncImage(

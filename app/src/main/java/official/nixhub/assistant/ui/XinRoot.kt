@@ -65,12 +65,10 @@ import official.nixhub.assistant.ui.theme.TextLow
 private data class Tab(val route: String, val label: String, val icon: ImageVector)
 
 private val TABS = listOf(
-    Tab("heroes", "Heroes", Icons.Rounded.GridView),
-    Tab("effects", "Effects", Icons.Rounded.AutoAwesome),
-    Tab("prep", "Prep", Icons.Rounded.Movie),
-    Tab("lobby", "Lobby", Icons.Rounded.MusicNote),
-    Tab("library", "Library", Icons.Rounded.Inventory2),
-    Tab("settings", "Setup", Icons.Rounded.Settings),
+    Tab("home", "Home", Icons.Rounded.GridView),
+    Tab("heroes", "Heroes", Icons.Rounded.AutoAwesome),
+    Tab("skins", "Skins", Icons.Rounded.Inventory2),
+    Tab("settings", "Settings", Icons.Rounded.Settings),
 )
 
 @Composable
@@ -78,7 +76,7 @@ fun XinRoot() {
     val ctx = LocalContext.current
     val hub = remember { HubState(ctx) }
     val snackbar = remember { SnackbarHostState() }
-    var route by rememberSaveable { mutableStateOf("heroes") }
+    var route by rememberSaveable { mutableStateOf("home") }
     var heroSlug by rememberSaveable { mutableStateOf<String?>(null) }
     var detail by remember { mutableStateOf<Job?>(null) }
     var slotFor by rememberSaveable { mutableStateOf<String?>(null) }
