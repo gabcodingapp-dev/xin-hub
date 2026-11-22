@@ -25,6 +25,7 @@ import androidx.compose.material.icons.rounded.FolderOpen
 import androidx.compose.material.icons.rounded.LibraryBooks
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Restore
+import androidx.compose.material.icons.rounded.Send
 import androidx.compose.material.icons.rounded.Security
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Switch
@@ -120,6 +121,23 @@ fun SettingsScreen(
                         "Recommended · no root, no superuser prompt",
                         Icons.Rounded.Security,
                     ) { hub.connectShizuku() }
+                }
+            }
+        }
+
+        item {
+            GlassCard(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(13.dp)) {
+                    Text("Community", color = TextHi, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    Text("Updates, fixes and direct help.", color = TextLow, fontSize = 10.sp)
+                    Spacer(Modifier.height(9.dp))
+                    ActionRow("Join Telegram channel", Config.TG_CHANNEL, Icons.Rounded.Send) {
+                        open(Config.TG_CHANNEL_URL)
+                    }
+                    Spacer(Modifier.height(7.dp))
+                    ActionRow("Message owner", Config.TG_OWNER, Icons.Rounded.Send) {
+                        open(Config.TG_OWNER_URL)
+                    }
                 }
             }
         }

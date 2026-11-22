@@ -24,6 +24,9 @@ class Injector(private val ctx: Context, private val prefs: Prefs) {
         val label: String = "",
         val error: String? = null,
         val finished: Boolean = false,
+        val phase: String = "preparing",
+        val bytes: Long = 0L,
+        val bytesTotal: Long = 0L,
     )
 
     private fun zipPath(job: Job): File {
@@ -32,7 +35,10 @@ class Injector(private val ctx: Context, private val prefs: Prefs) {
         return File(zipDir, "${hash}_${name.takeLast(48)}")
     }
 
-    suspend fun fetch(job: Job, onBytes: (Long) -> Unit = {}): File? = withContext(Dispatchers.IO) {
+    suspend fun fetch(
+        job: Job,
+        onProgress: (Long, Long) -> Unit = { _, _ -> },
+    ): File? = withContext(Dispatchers.IO) {
         if (job.script.startsWith("file:")) {
             val path = job.script.removePrefix("file://")
             val local = File(path)
@@ -40,7 +46,7 @@ class Injector(private val ctx: Context, private val prefs: Prefs) {
         }
         val target = zipPath(job)
         if (target.exists() && target.length() > 0) return@withContext target
-        Net.download(job.script, target, onBytes)
+        Net.download(job.script, target, onProgress)
     }
 
     /** Copies a user-picked archive into app cache and returns a job that can be applied. */
@@ -72,9 +78,24 @@ class Injector(private val ctx: Context, private val prefs: Prefs) {
         job: Job,
         onProgress: (Progress) -> Unit,
     ): Progress = withContext(Dispatchers.IO) {
-        val zip = fetch(job) ?: return@withContext Progress(
-            error = "download failed", finished = true
+        onProgress(Progress(running = true, phase = "downloading", label = job.title))
+        val zip = fetch(job) { bytes, total ->
+            onProgress(
+                Progress(
+                    running = true,
+                    phase = "downloading",
+                    label = job.title,
+                    bytes = bytes,
+                    bytesTotal = total,
+                )
+            )
+        } ?: return@withContext Progress(
+            error = "download failed",
+            finished = true,
+            phase = "error",
+            label = job.title,
         )
+        onProgress(Progress(running = true, phase = "preparing", label = "reading archive"))
         val backupDir = File(backupRoot, job.id).apply { mkdirs() }
 
         var written = 0
@@ -88,9 +109,16 @@ class Injector(private val ctx: Context, private val prefs: Prefs) {
                 }
             }
         } catch (t: Throwable) {
-            return@withContext Progress(error = "archive is not readable", finished = true)
+            return@withContext Progress(
+                error = "archive is not readable", finished = true, phase = "error"
+            )
         }
-        onProgress(Progress(running = true, done = 0, total = total, label = "applying"))
+        onProgress(
+            Progress(
+                running = true, done = 0, total = total,
+                phase = "injecting", label = "writing files",
+            )
+        )
 
         var failures = 0
         try {
@@ -126,18 +154,31 @@ class Injector(private val ctx: Context, private val prefs: Prefs) {
                     } else {
                         failures++
                     }
-                    onProgress(Progress(running = true, done = written, total = total, label = rel.substringAfterLast('/')))
+                    onProgress(
+                        Progress(
+                            running = true, done = written, total = total,
+                            phase = "injecting", label = rel.substringAfterLast('/'),
+                        )
+                    )
                 }
             }
         } catch (t: Throwable) {
-            return@withContext Progress(error = t.message ?: "write failed", finished = true)
+            return@withContext Progress(
+                error = t.message ?: "write failed", finished = true, phase = "error"
+            )
         }
 
         if (written == 0) {
-            return@withContext Progress(error = "nothing written — check the folder permission", finished = true)
+            return@withContext Progress(
+                error = "nothing written — check the folder permission",
+                finished = true, phase = "error",
+            )
         }
         if (failures > 0 && failures >= written) {
-            return@withContext Progress(error = "writes rejected by the file provider", finished = true)
+            return@withContext Progress(
+                error = "writes rejected by the file provider",
+                finished = true, phase = "error",
+            )
         }
 
         prefs.record(
@@ -150,7 +191,10 @@ class Injector(private val ctx: Context, private val prefs: Prefs) {
                 at = System.currentTimeMillis(),
             )
         )
-        Progress(running = false, done = written, total = written, finished = true)
+        Progress(
+            running = false, done = written, total = written,
+            finished = true, phase = "done", label = "complete",
+        )
     }
 
     suspend fun restore(
@@ -159,9 +203,13 @@ class Injector(private val ctx: Context, private val prefs: Prefs) {
         onProgress: (Progress) -> Unit,
     ): Progress = withContext(Dispatchers.IO) {
         val dir = File(backupRoot, jobId)
-        if (!dir.exists()) return@withContext Progress(error = "no backup for this item", finished = true)
+        if (!dir.exists()) return@withContext Progress(
+            error = "no backup for this item", finished = true, phase = "error"
+        )
         val files = dir.walkTopDown().filter { it.isFile }.toList()
-        if (files.isEmpty()) return@withContext Progress(error = "backup is empty", finished = true)
+        if (files.isEmpty()) return@withContext Progress(
+            error = "backup is empty", finished = true, phase = "error"
+        )
 
         var done = 0
         var failed = 0
@@ -177,21 +225,31 @@ class Injector(private val ctx: Context, private val prefs: Prefs) {
             } else {
                 failed++
             }
-            onProgress(Progress(running = true, done = done, total = files.size, label = rel.substringAfterLast('/')))
+            onProgress(
+                Progress(
+                    running = true, done = done, total = files.size,
+                    phase = "restoring", label = rel.substringAfterLast('/'),
+                )
+            )
         }
         if (failed == 0) {
             dir.deleteRecursively()
             prefs.forget(jobId)
-            Progress(running = false, done = done, total = files.size, finished = true)
+            Progress(
+                running = false, done = done, total = files.size,
+                finished = true, phase = "done", label = "restored",
+            )
         } else {
-            Progress(error = "$failed files could not be restored", finished = true)
+            Progress(error = "$failed files could not be restored", finished = true, phase = "error")
         }
     }
 
     suspend fun restoreAll(storage: Storage, onProgress: (Progress) -> Unit): Progress =
         withContext(Dispatchers.IO) {
             val jobs = backupRoot.listFiles()?.filter { it.isDirectory } ?: emptyList()
-            if (jobs.isEmpty()) return@withContext Progress(error = "no backups stored", finished = true)
+            if (jobs.isEmpty()) return@withContext Progress(
+                error = "no backups stored", finished = true, phase = "error"
+            )
             var done = 0
             var failed = 0
             var total = 0
@@ -212,14 +270,22 @@ class Injector(private val ctx: Context, private val prefs: Prefs) {
                         failed++
                     }
                 }
-                onProgress(Progress(running = true, done = done, total = total, label = dir.name))
+                onProgress(
+                    Progress(
+                        running = true, done = done, total = total,
+                        phase = "restoring", label = dir.name,
+                    )
+                )
                 if (failed == 0) dir.deleteRecursively()
             }
             if (failed == 0) {
                 prefs.clearApplied()
-                Progress(running = false, done = done, total = done, finished = true)
+                Progress(
+                    running = false, done = done, total = done,
+                    finished = true, phase = "done", label = "restored",
+                )
             } else {
-                Progress(error = "$failed files could not be restored", finished = true)
+                Progress(error = "$failed files could not be restored", finished = true, phase = "error")
             }
         }
 

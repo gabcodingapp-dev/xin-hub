@@ -29,11 +29,11 @@ object Net {
         }
     }
 
-    /** Streams a zip to disk. Reports bytes written so the UI can show a real number. */
+    /** Streams a zip to disk. Reports bytes written and the server-declared total. */
     suspend fun download(
         url: String,
         dest: File,
-        onProgress: (Long) -> Unit = {},
+        onProgress: (Long, Long) -> Unit = { _, _ -> },
     ): File? = withContext(Dispatchers.IO) {
         var conn: HttpURLConnection? = null
         try {
@@ -44,6 +44,7 @@ object Net {
                 setRequestProperty("User-Agent", UA)
             }
             if (conn.responseCode !in 200..299) return@withContext null
+            val total = runCatching { conn.contentLengthLong }.getOrDefault(-1L).takeIf { it > 0 } ?: 0L
             dest.parentFile?.mkdirs()
             val tmp = File(dest.parentFile, dest.name + ".part")
             var written = 0L
@@ -55,7 +56,7 @@ object Net {
                         if (n <= 0) break
                         output.write(buf, 0, n)
                         written += n
-                        onProgress(written)
+                        onProgress(written, total)
                     }
                     output.flush()
                 }

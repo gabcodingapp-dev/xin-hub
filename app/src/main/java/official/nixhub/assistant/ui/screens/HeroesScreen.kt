@@ -33,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -65,6 +66,13 @@ fun HeroesScreen(hub: HubState, onHero: (String) -> Unit) {
     var query by rememberSaveable { mutableStateOf("") }
     var role by rememberSaveable { mutableStateOf("All") }
     var ascending by rememberSaveable { mutableStateOf(true) }
+
+    val roleCounts = remember(heroes) {
+        ROLES.associateWith { role ->
+            if (role == "All") heroes.size
+            else heroes.count { hero -> hero.roles.any { it.equals(role, true) } }
+        }
+    }
 
     val shown by remember(heroes, query, role, ascending) {
         derivedStateOf {
@@ -119,7 +127,7 @@ fun HeroesScreen(hub: HubState, onHero: (String) -> Unit) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("Select a role", color = TextHi, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+            Text("Pick a role", color = TextHi, fontSize = 13.sp, fontWeight = FontWeight.Bold)
             Text("${shown.size} HEROES", color = TextLow, fontSize = 9.5.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.6.sp)
         }
         Spacer(Modifier.height(6.dp))
@@ -128,7 +136,7 @@ fun HeroesScreen(hub: HubState, onHero: (String) -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             items(ROLES, key = { it }) { name ->
-                FilterChip(name, role == name) { role = name }
+                FilterChip("$name · ${roleCounts[name] ?: 0}", role == name) { role = name }
             }
         }
 
@@ -154,17 +162,27 @@ private fun HeroTile(hero: Hero, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(0.72f)
+            .aspectRatio(0.92f)
             .clip(RoundedCornerShape(10.dp))
             .background(Panel)
             .pressable(onClick),
     ) {
-        NetImage(
-            url = hero.head,
-            modifier = Modifier.fillMaxSize(),
-            targetWidth = 150,
-            targetHeight = 200,
-        )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(7.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(PanelHi),
+            contentAlignment = Alignment.Center,
+        ) {
+            NetImage(
+                url = hero.head,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Fit,
+                targetWidth = 456,
+                targetHeight = 534,
+            )
+        }
         Column(
             modifier = Modifier
                 .align(Alignment.BottomStart)

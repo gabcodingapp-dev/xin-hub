@@ -10,7 +10,11 @@ object Config {
     const val ASSETS_URL = "https://github.com/$OWNER/$ASSETS_REPO"
     const val DEV = "Gab"
     const val PACKAGE = "official.nixhub.assistant"
-    const val VERSION = "1.4.0"
+    const val VERSION = "1.5.0"
+    const val TG_CHANNEL = "t.me/toolsdropdaw"
+    const val TG_OWNER = "@xvanngdxc"
+    const val TG_CHANNEL_URL = "https://t.me/toolsdropdaw"
+    const val TG_OWNER_URL = "https://t.me/xvanngdxc"
 
     /** Restoration-protection pair shipped with the original NIX HUB. */
     const val PROTECT_ON = ASSETS_BASE + "restore/enable_protection.zip"

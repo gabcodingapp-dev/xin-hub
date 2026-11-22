@@ -5,7 +5,7 @@ app, signed with the repo keystore, assembled by GitHub Actions on every push.
 
 ```
 package   official.nixhub.assistant
-version   1.4.0 (5)
+version   1.5.0 (6)
 minSdk    26
 target    35
 ```
@@ -14,7 +14,7 @@ target    35
 
 | Surface | Behaviour |
 |---|---|
-| Hero skins | 1550 catalogued, **874 with a live script**. Browse by role, open a hero, then swap an owned slot to a Visual / Upgrade / Custom look. The Upgrade tab is universal: every injectable look can be placed on any owned slot. |
+| Hero skins | 1550 catalogued, **874 with a live script**. Role chips show live counts. Open a hero, then swipe through large landscape skin cards and tap to apply or upgrade. The Upgrade tab is universal: every injectable look can be placed on any owned slot. |
 | Effects | Recalls, avatar borders, emotes, respawns, trails, eliminations, radiant kits, flying vehicles. |
 | Preparation | 487 loading intros and lobby/interface backgrounds, split by category, with the same apply flow as effects. |
 | Lobby sounds | 9 tracks, streamed preview, one-tap apply. |
@@ -38,7 +38,7 @@ A script archive is a tree rooted at `dragon2017/assets` (`Art/...`, `Document/.
 `Interface/...`). Before any file is overwritten, the original is copied into
 `filesDir/backups/<jobId>/<relative path>`. Restore walks that tree and writes it back, so it
 never depends on the game redownloading assets. Injection runs behind an animated progress
-overlay with file counts, live labels and a completion state.
+overlay with download byte counts, phase labels, file counts and a completion state. Success and failure also surface as in-app messages.
 
 ## Build
 
@@ -47,7 +47,7 @@ gradle :app:assembleDebug
 gradle :app:assembleRelease
 ```
 
-CI does the same on `ubuntu-latest` with JDK 17 and Gradle 8.9. Tag `v1.4.0` to publish a
+CI does the same on `ubuntu-latest` with JDK 17 and Gradle 8.9. Tag `v1.5.0` to publish a
 release with the APKs attached.
 
 ## Signing
@@ -64,3 +64,5 @@ Catalog and art live in a separate repo: `gabcodingapp-dev/xin-assets`. The app 
 ## Credits
 
 Developed by Gab.
+
+Telegram channel: `t.me/toolsdropdaw` · owner: `@xvanngdxc`.
