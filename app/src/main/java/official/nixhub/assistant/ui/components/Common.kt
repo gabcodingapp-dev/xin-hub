@@ -3,6 +3,8 @@ package official.nixhub.assistant.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,11 +20,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Icon
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
@@ -42,6 +49,16 @@ import official.nixhub.assistant.ui.theme.Void
 import official.nixhub.assistant.ui.theme.XinBody
 
 @Composable
+fun Modifier.pressable(onClick: () -> Unit): Modifier {
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    val scale by animateFloatAsState(if (pressed) 0.965f else 1f, tween(90))
+    return this
+        .graphicsLayer { scaleX = scale; scaleY = scale }
+        .clickable(interactionSource = interaction, indication = null, onClick = onClick)
+}
+
+@Composable
 fun XinBackdrop(content: @Composable () -> Unit) {
     Box(modifier = Modifier.background(Void)) { content() }
 }
@@ -56,7 +73,7 @@ fun GlassCard(
         .clip(RoundedCornerShape(14.dp))
         .background(Panel)
         .border(1.dp, Line, RoundedCornerShape(14.dp))
-    if (onClick != null) card = card.clickable { onClick() }
+    if (onClick != null) card = card.pressable(onClick)
     Box(card) { content() }
 }
 
@@ -114,7 +131,7 @@ fun NetImage(
         ImageRequest.Builder(context)
             .data(url)
             .size(targetWidth, targetHeight)
-            .precision(coil.size.Precision.INEXACT)
+            .precision(coil.size.Precision.EXACT)
             .bitmapConfig(android.graphics.Bitmap.Config.RGB_565)
             .build()
     }
@@ -202,7 +219,7 @@ fun FilterChip(label: String, active: Boolean, onClick: () -> Unit) {
             .clip(RoundedCornerShape(50))
             .background(if (active) Color(0xFF3DDC97) else Panel)
             .border(1.dp, if (active) Color(0xFF3DDC97) else Line, RoundedCornerShape(50))
-            .clickable { onClick() }
+            .pressable(onClick)
             .padding(horizontal = 12.dp, vertical = 6.dp),
     ) {
         Text(

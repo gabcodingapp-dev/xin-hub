@@ -103,6 +103,9 @@ data class Job(
     val subtitle: String,
     val script: String,
     val image: String?,
+    val slotId: String? = null,
+    val slotName: String? = null,
+    val upgradeMode: Boolean = false,
 ) {
     enum class Kind { SKIN, EFFECT, LOBBY }
 }

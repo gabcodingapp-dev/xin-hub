@@ -47,6 +47,7 @@ import official.nixhub.assistant.ui.components.EmptyState
 import official.nixhub.assistant.ui.components.NetImage
 import official.nixhub.assistant.ui.components.Pill
 import official.nixhub.assistant.ui.components.SearchField
+import official.nixhub.assistant.ui.components.pressable
 import official.nixhub.assistant.ui.theme.Cyan
 import official.nixhub.assistant.ui.theme.Line
 import official.nixhub.assistant.ui.theme.Panel
@@ -60,7 +61,13 @@ private val GROUPS = listOf("visual", "upgrade", "custom")
 private val GROUP_LABEL = mapOf("visual" to "Visual", "upgrade" to "Upgrade", "custom" to "Custom")
 
 @Composable
-fun HeroDetailScreen(hub: HubState, slug: String, onBack: () -> Unit, onReplace: (String) -> Unit) {
+fun HeroDetailScreen(
+    hub: HubState,
+    slug: String,
+    onBack: () -> Unit,
+    onReplace: (String) -> Unit,
+    onUpgrade: (Skin) -> Unit,
+) {
     val hero = remember(slug, hub.catalog.heroes) { hub.catalog.heroes.firstOrNull { it.slug == slug } }
     val all = remember(slug, hub.catalog.skins) { hub.catalog.skins.filter { it.heroSlug == slug } }
     var tab by rememberSaveable(slug) { mutableStateOf("visual") }
@@ -68,7 +75,9 @@ fun HeroDetailScreen(hub: HubState, slug: String, onBack: () -> Unit, onReplace:
 
     val shown by remember(all, tab, query) {
         derivedStateOf {
-            all.filter { it.group == tab && (query.isBlank() || it.name.contains(query, true)) }
+            val pool = if (tab == "upgrade") all.filter { it.injectable }
+                       else all.filter { it.group == tab }
+            pool.filter { query.isBlank() || it.name.contains(query, true) }
         }
     }
 
@@ -82,7 +91,7 @@ fun HeroDetailScreen(hub: HubState, slug: String, onBack: () -> Unit, onReplace:
                     .size(32.dp)
                     .clip(RoundedCornerShape(9.dp))
                     .background(Panel)
-                    .clickable { onBack() },
+                    .pressable(onBack),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(Icons.Rounded.ArrowBack, contentDescription = "Back", tint = TextMid, modifier = Modifier.size(17.dp))
@@ -104,13 +113,13 @@ fun HeroDetailScreen(hub: HubState, slug: String, onBack: () -> Unit, onReplace:
             horizontalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             GROUPS.forEach { group ->
-                val count = all.count { it.group == group }
+                val count = if (group == "upgrade") all.count { it.injectable } else all.count { it.group == group }
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .clip(RoundedCornerShape(9.dp))
                         .background(if (tab == group) Cyan else Panel)
-                        .clickable { tab = group }
+                        .pressable { tab = group }
                         .padding(vertical = 8.dp),
                     contentAlignment = Alignment.Center,
                 ) {
@@ -132,7 +141,7 @@ fun HeroDetailScreen(hub: HubState, slug: String, onBack: () -> Unit, onReplace:
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(10.dp))
                     .background(Brush.horizontalGradient(listOf(Cyan, Color(0xFF7CE7FF))))
-                    .clickable { onReplace(slug) }
+                    .pressable { onReplace(slug) }
                     .padding(vertical = 11.dp),
                 contentAlignment = Alignment.Center,
             ) {
@@ -143,6 +152,23 @@ fun HeroDetailScreen(hub: HubState, slug: String, onBack: () -> Unit, onReplace:
                 }
             }
             Spacer(Modifier.height(8.dp))
+            if (tab == "upgrade") {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Panel)
+                        .border(1.dp, Cyan.copy(alpha = 0.35f), RoundedCornerShape(10.dp))
+                        .padding(horizontal = 11.dp, vertical = 9.dp),
+                ) {
+                    Text(
+                        "Universal upgrade · every injectable skin can be used here. Pick a look, then choose the skin slot to place it on.",
+                        color = TextMid,
+                        fontSize = 10.sp,
+                    )
+                }
+                Spacer(Modifier.height(8.dp))
+            }
             SearchField(query, "Search ${GROUP_LABEL[tab]} skins") { query = it }
         }
 
@@ -156,9 +182,13 @@ fun HeroDetailScreen(hub: HubState, slug: String, onBack: () -> Unit, onReplace:
                 modifier = Modifier.fillMaxSize(),
             ) {
                 items(shown, key = { it.id }) { skin ->
-                    SkinRow(skin) {
-                        val job = skin.toJob()
-                        if (job != null) hub.apply(job) else hub.say("${skin.name} has no script yet")
+                    SkinRow(skin, tab == "upgrade") {
+                        if (tab == "upgrade") {
+                            onUpgrade(skin)
+                        } else {
+                            val job = skin.toJob()
+                            if (job != null) hub.apply(job) else hub.say("${skin.name} has no script yet")
+                        }
                     }
                 }
                 item { Spacer(Modifier.height(18.dp)) }
@@ -168,7 +198,7 @@ fun HeroDetailScreen(hub: HubState, slug: String, onBack: () -> Unit, onReplace:
 }
 
 @Composable
-private fun SkinRow(skin: Skin, onClick: () -> Unit) {
+private fun SkinRow(skin: Skin, upgradeMode: Boolean, onClick: () -> Unit) {
     val applied = Xin.prefs.isApplied(skin.id)
     Row(
         modifier = Modifier
@@ -176,7 +206,7 @@ private fun SkinRow(skin: Skin, onClick: () -> Unit) {
             .clip(RoundedCornerShape(11.dp))
             .background(Panel)
             .border(1.dp, Line, RoundedCornerShape(11.dp))
-            .clickable { onClick() }
+            .pressable(onClick)
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -196,13 +226,13 @@ private fun SkinRow(skin: Skin, onClick: () -> Unit) {
             Spacer(Modifier.height(3.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                 Pill(skin.tier.ifBlank { "skin" }, tierColor(skin.tier))
-                if (skin.group == "upgrade") Pill("upgrade", Cyan)
+                if (upgradeMode || skin.group == "upgrade") Pill("upgrade", Cyan)
                 if (skin.group == "custom") Pill("custom", Cyan)
                 if (applied) Pill("on", Cyan, filled = true)
             }
         }
         if (skin.injectable) {
-            Text("USE", color = Cyan, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+            Text(if (upgradeMode) "UPGRADE" else "USE", color = Cyan, fontSize = 10.sp, fontWeight = FontWeight.Bold)
         } else {
             Text("soon", color = TextLow, fontSize = 9.5.sp)
         }

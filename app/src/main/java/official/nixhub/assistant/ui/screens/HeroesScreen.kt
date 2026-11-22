@@ -44,6 +44,7 @@ import official.nixhub.assistant.ui.HubState
 import official.nixhub.assistant.ui.components.EmptyState
 import official.nixhub.assistant.ui.components.FilterChip
 import official.nixhub.assistant.ui.components.NetImage
+import official.nixhub.assistant.ui.components.pressable
 import official.nixhub.assistant.ui.components.SearchField
 import official.nixhub.assistant.ui.theme.Cyan
 import official.nixhub.assistant.ui.theme.Line
@@ -98,7 +99,7 @@ fun HeroesScreen(hub: HubState, onHero: (String) -> Unit) {
                         .clip(RoundedCornerShape(12.dp))
                         .background(Panel)
                         .border(1.dp, Line, RoundedCornerShape(12.dp))
-                        .clickable { ascending = !ascending }
+                        .pressable { ascending = !ascending }
                         .padding(horizontal = 12.dp),
                     contentAlignment = Alignment.Center,
                 ) {
@@ -136,7 +137,7 @@ fun HeroesScreen(hub: HubState, onHero: (String) -> Unit) {
             EmptyState("No hero", "Try another role or search term.")
         } else {
             LazyVerticalGrid(
-                columns = GridCells.Fixed(4),
+                columns = GridCells.Fixed(3),
                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -156,7 +157,7 @@ private fun HeroTile(hero: Hero, onClick: () -> Unit) {
             .aspectRatio(0.72f)
             .clip(RoundedCornerShape(10.dp))
             .background(Panel)
-            .clickable(onClick = onClick),
+            .pressable(onClick),
     ) {
         NetImage(
             url = hero.head,

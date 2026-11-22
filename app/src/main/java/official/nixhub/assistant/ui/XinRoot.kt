@@ -3,6 +3,14 @@ package official.nixhub.assistant.ui
 import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +28,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AutoAwesome
+import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.Inventory2
 import androidx.compose.material.icons.rounded.Movie
@@ -41,13 +50,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import official.nixhub.assistant.data.Job
+import official.nixhub.assistant.data.Skin
 import official.nixhub.assistant.ui.components.XinBackdrop
+import official.nixhub.assistant.ui.components.pressable
 import official.nixhub.assistant.ui.screens.EffectsScreen
 import official.nixhub.assistant.ui.screens.GuidesScreen
 import official.nixhub.assistant.ui.screens.HeroDetailScreen
@@ -57,6 +72,7 @@ import official.nixhub.assistant.ui.screens.LobbyScreen
 import official.nixhub.assistant.ui.screens.SettingsScreen
 import official.nixhub.assistant.ui.screens.SlotSheet
 import official.nixhub.assistant.ui.theme.Cyan
+import official.nixhub.assistant.ui.theme.Danger
 import official.nixhub.assistant.ui.theme.Line
 import official.nixhub.assistant.ui.theme.Panel
 import official.nixhub.assistant.ui.theme.TextHi
@@ -80,6 +96,7 @@ fun XinRoot() {
     var heroSlug by rememberSaveable { mutableStateOf<String?>(null) }
     var detail by remember { mutableStateOf<Job?>(null) }
     var slotFor by rememberSaveable { mutableStateOf<String?>(null) }
+    var upgradeFor by remember { mutableStateOf<Skin?>(null) }
     var showWelcome by rememberSaveable { mutableStateOf(!hub.shizuku.granted) }
 
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
@@ -145,8 +162,9 @@ fun XinRoot() {
                         modifier = Modifier
                             .weight(1f)
                             .clip(RoundedCornerShape(10.dp))
-                            .clickable {
+                            .pressable {
                                 heroSlug = null
+                                upgradeFor = null
                                 route = tab.route
                             }
                             .padding(vertical = 6.dp),
@@ -181,10 +199,11 @@ fun XinRoot() {
                     slug != null -> HeroDetailScreen(
                         hub = hub,
                         slug = slug,
-                        onBack = { heroSlug = null },
+                        onBack = { heroSlug = null; upgradeFor = null },
                         onReplace = { slotFor = it },
+                        onUpgrade = { upgradeFor = it },
                     )
-                    route == "heroes" -> HeroesScreen(hub = hub, onHero = { heroSlug = it })
+                    route == "heroes" -> HeroesScreen(hub = hub, onHero = { heroSlug = it; slotFor = null; upgradeFor = null })
                     route == "effects" -> EffectsScreen(hub = hub, onApply = { detail = it })
                     route == "prep" || route == "intros" -> EffectsScreen(hub = hub, onApply = { detail = it }, kind = "prep")
                     route == "lobby" -> LobbyScreen(hub = hub, onApply = { detail = it })
@@ -211,6 +230,15 @@ fun XinRoot() {
 
     slotFor?.let { slug ->
         SlotSheet(hub = hub, slug = slug, onClose = { slotFor = null })
+    }
+
+    upgradeFor?.let { look ->
+        SlotSheet(
+            hub = hub,
+            slug = look.heroSlug,
+            onClose = { upgradeFor = null },
+            preset = look,
+        )
     }
 
     if (showWelcome) {
@@ -324,37 +352,108 @@ private fun WelcomeAdbOverlay(hub: HubState, onContinue: () -> Unit) {
 private fun ProgressOverlay(hub: HubState) {
     val p = hub.progress
     if (!p.running && p.error == null && !p.finished) return
+
+    val failed = p.error != null
+    val fraction = if (p.total > 0) (p.done.toFloat() / p.total).coerceIn(0f, 1f) else 0f
+    val sweep by animateFloatAsState(fraction * 360f, tween(260))
+    val doneScale by animateFloatAsState(if (p.finished && !failed) 1f else 0f, tween(240))
+    val loop = rememberInfiniteTransition()
+    val spin by loop.animateFloat(
+        0f, 360f,
+        infiniteRepeatable(tween(1400, easing = LinearEasing), RepeatMode.Restart),
+    )
+    val glow by loop.animateFloat(
+        0.35f, 0.8f,
+        infiniteRepeatable(tween(700, easing = LinearEasing), RepeatMode.Reverse),
+    )
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xDD090A0E))
+            .background(Color(0xE6080B10))
             .clickable(enabled = !p.running) { hub.dismissProgress() },
         contentAlignment = Alignment.Center,
     ) {
         Column(
-            modifier = Modifier.padding(28.dp).clip(RoundedCornerShape(16.dp)).background(Panel).padding(20.dp),
+            modifier = Modifier
+                .padding(28.dp)
+                .clip(RoundedCornerShape(18.dp))
+                .background(Panel)
+                .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+            Box(contentAlignment = Alignment.Center) {
+                Canvas(
+                    modifier = Modifier
+                        .size(94.dp)
+                        .graphicsLayer { rotationZ = if (p.running) spin else 0f },
+                ) {
+                    val stroke = Stroke(width = 4.dp.toPx(), cap = StrokeCap.Round)
+                    drawArc(Line, 0f, 360f, false, style = stroke)
+                    drawArc(
+                        if (failed) Danger else Cyan,
+                        0f,
+                        if (failed) 360f else sweep,
+                        false,
+                        style = stroke,
+                    )
+                    drawCircle(
+                        Cyan.copy(alpha = glow),
+                        radius = 2.5.dp.toPx(),
+                        center = Offset(size.width, size.height / 2f),
+                    )
+                }
+                if (p.finished && !failed) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(RoundedCornerShape(50))
+                            .background(Cyan)
+                            .graphicsLayer { scaleX = doneScale; scaleY = doneScale },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(Icons.Rounded.Check, contentDescription = null, tint = Color(0xFF080B10), modifier = Modifier.size(22.dp))
+                    }
+                } else {
+                    Text("X", color = TextHi, fontSize = 22.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
             Text(
                 when {
-                    p.error != null -> "Stopped"
-                    p.finished -> "Done"
-                    else -> "Working"
+                    failed -> "Injection stopped"
+                    p.finished -> "Injection complete"
+                    else -> "Injecting skin"
                 },
                 color = TextHi,
-                fontSize = 15.sp,
+                fontSize = 16.sp,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
             )
-            Spacer(Modifier.height(7.dp))
-            Text(p.error ?: "${p.done} / ${p.total} files", color = TextLow, fontSize = 11.sp)
+            Spacer(Modifier.height(5.dp))
+            Text(
+                p.error ?: if (p.finished) "${p.done} files written" else "${p.done} / ${p.total} files",
+                color = if (failed) Danger else TextLow,
+                fontSize = 11.sp,
+            )
             if (p.label.isNotBlank() && p.running) {
                 Spacer(Modifier.height(3.dp))
-                Text(p.label, color = TextLow, fontSize = 9.5.sp)
+                Text(p.label, color = TextLow, fontSize = 9.5.sp, maxLines = 1)
             }
-            Spacer(Modifier.height(12.dp))
-            Box(modifier = Modifier.fillMaxWidth().height(3.dp).clip(RoundedCornerShape(50)).background(Line)) {
-                val fraction = if (p.total > 0) (p.done.toFloat() / p.total).coerceIn(0f, 1f) else 0f
+            Spacer(Modifier.height(14.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.72f)
+                    .height(3.dp)
+                    .clip(RoundedCornerShape(50))
+                    .background(Line),
+            ) {
                 Box(
-                    modifier = Modifier.fillMaxWidth(fraction).height(3.dp).clip(RoundedCornerShape(50)).background(Cyan),
+                    modifier = Modifier
+                        .fillMaxWidth(fraction)
+                        .height(3.dp)
+                        .clip(RoundedCornerShape(50))
+                        .background(if (failed) Danger else Cyan),
                 )
             }
         }
