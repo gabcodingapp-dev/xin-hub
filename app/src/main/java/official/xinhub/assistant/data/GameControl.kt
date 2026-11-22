@@ -44,7 +44,7 @@ object GameControl {
         if (packages.isEmpty()) return false
         val runner = storage.shell ?: return false
         val cmd = packages.joinToString("; ") { "am force-stop $it" }
-        val result = runner(cmd) ?: return false
+        val result = runner(cmd, null) ?: return false
         return result.first == 0
     }
 
