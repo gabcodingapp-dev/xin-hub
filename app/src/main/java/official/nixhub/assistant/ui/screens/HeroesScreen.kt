@@ -7,12 +7,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -30,7 +33,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import official.nixhub.assistant.data.Hero
@@ -47,32 +53,75 @@ import official.nixhub.assistant.ui.theme.TextLow
 import official.nixhub.assistant.ui.theme.TextMid
 import official.nixhub.assistant.ui.theme.XinDisplay
 
-private val ROLES = listOf("All", "Fighter", "Mage", "Assassin", "Marksman", "Support", "Tank")
+private val ROLES = listOf("All", "Tank", "Fighter", "Assassin", "Mage", "Marksman", "Support")
+private val HERO_SCRIM = Brush.verticalGradient(
+    colors = listOf(Color.Transparent, Color(0x66080B10), Color(0xEE080B10)),
+)
 
 @Composable
 fun HeroesScreen(hub: HubState, onHero: (String) -> Unit) {
     val heroes = hub.catalog.heroes
     var query by rememberSaveable { mutableStateOf("") }
     var role by rememberSaveable { mutableStateOf("All") }
+    var ascending by rememberSaveable { mutableStateOf(true) }
 
-    val shown by remember(heroes, query, role) {
+    val shown by remember(heroes, query, role, ascending) {
         derivedStateOf {
-            heroes.filter { hero ->
+            val filtered = heroes.filter { hero ->
                 (role == "All" || hero.roles.any { it.equals(role, true) }) &&
                     (query.isBlank() || hero.name.contains(query, true))
             }
+            if (ascending) filtered.sortedBy { it.name } else filtered.sortedByDescending { it.name }
         }
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.padding(horizontal = 14.dp).padding(top = 10.dp)) {
-            Text("HEROES", color = TextHi, fontSize = 23.sp, fontWeight = FontWeight.Black, fontFamily = XinDisplay, letterSpacing = 1.sp)
-            Text("${heroes.size} heroes · pick one to change its skins", color = TextLow, fontSize = 10.5.sp)
-            Spacer(Modifier.height(9.dp))
-            SearchField(query, "Search hero") { query = it }
+            Text(
+                "HERO ARCHIVE",
+                color = TextHi,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Black,
+                fontFamily = XinDisplay,
+                letterSpacing = 1.sp,
+            )
+            Text("KNOW EVERY CONTENDER", color = TextLow, fontSize = 9.5.sp, letterSpacing = 0.8.sp)
+            Spacer(Modifier.height(10.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(modifier = Modifier.weight(1f)) {
+                    SearchField(query, "Search ${heroes.size} heroes") { query = it }
+                }
+                Spacer(Modifier.width(8.dp))
+                Box(
+                    modifier = Modifier
+                        .height(42.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Panel)
+                        .border(1.dp, Line, RoundedCornerShape(12.dp))
+                        .clickable { ascending = !ascending }
+                        .padding(horizontal = 12.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        if (ascending) "A-Z" else "Z-A",
+                        color = if (ascending) TextHi else Cyan,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+            }
         }
 
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(10.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text("Select a role", color = TextHi, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+            Text("${shown.size} HEROES", color = TextLow, fontSize = 9.5.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.6.sp)
+        }
+        Spacer(Modifier.height(6.dp))
         LazyRow(
             contentPadding = PaddingValues(horizontal = 14.dp),
             horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -87,10 +136,10 @@ fun HeroesScreen(hub: HubState, onHero: (String) -> Unit) {
             EmptyState("No hero", "Try another role or search term.")
         } else {
             LazyVerticalGrid(
-                columns = GridCells.Fixed(3),
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 2.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                columns = GridCells.Fixed(4),
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
                 modifier = Modifier.fillMaxSize(),
             ) {
                 items(shown, key = { it.slug }) { hero -> HeroTile(hero) { onHero(hero.slug) } }
@@ -101,28 +150,40 @@ fun HeroesScreen(hub: HubState, onHero: (String) -> Unit) {
 
 @Composable
 private fun HeroTile(hero: Hero, onClick: () -> Unit) {
-    Column(
+    Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(12.dp))
+            .fillMaxWidth()
+            .aspectRatio(0.72f)
+            .clip(RoundedCornerShape(10.dp))
             .background(Panel)
-            .border(1.dp, Line, RoundedCornerShape(12.dp))
-            .clickable { onClick() },
+            .clickable(onClick = onClick),
     ) {
-        Box(modifier = Modifier.fillMaxWidth().aspectRatio(0.92f)) {
-            NetImage(hero.head, Modifier.fillMaxSize())
-        }
-        Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 7.dp)) {
+        NetImage(
+            url = hero.head,
+            modifier = Modifier.fillMaxSize(),
+            targetWidth = 150,
+            targetHeight = 200,
+        )
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .fillMaxWidth()
+                .background(Color(0xCC080B10))
+                .padding(horizontal = 6.dp, vertical = 4.dp),
+        ) {
             Text(
                 hero.name,
                 color = TextHi,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.SemiBold,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
                 maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
             Text(
-                hero.roles.joinToString(" · "),
+                hero.roles.firstOrNull()?.uppercase() ?: "HERO",
                 color = Cyan,
-                fontSize = 8.5.sp,
+                fontSize = 7.5.sp,
+                fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
             )
         }

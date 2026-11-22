@@ -2,14 +2,9 @@ package official.nixhub.assistant.ui.screens
 
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +15,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AutoAwesome
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -32,107 +30,119 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import official.nixhub.assistant.ui.theme.Cyan
 import official.nixhub.assistant.ui.theme.Line
+import official.nixhub.assistant.ui.theme.Panel
+import official.nixhub.assistant.ui.theme.PanelHi
 import official.nixhub.assistant.ui.theme.TextHi
 import official.nixhub.assistant.ui.theme.TextLow
-import official.nixhub.assistant.ui.theme.Violet
 import official.nixhub.assistant.ui.theme.Void
 import official.nixhub.assistant.ui.theme.XinDisplay
 
-/** Startup card. Runs for one beat while the catalog snapshot loads underneath. */
 @Composable
 fun SplashScreen(onDone: () -> Unit) {
     var started by remember { mutableStateOf(false) }
-    val enter by animateFloatAsState(if (started) 1f else 0f, tween(420, easing = FastOutSlowInEasing))
-    val sweep by animateFloatAsState(if (started) 1f else 0f, tween(1200, easing = FastOutSlowInEasing))
-    val loop = rememberInfiniteTransition()
-    val spin by loop.animateFloat(
-        0f, 1f,
-        infiniteRepeatable(tween(1800, easing = LinearEasing), RepeatMode.Restart),
+    val enter by animateFloatAsState(
+        targetValue = if (started) 1f else 0f,
+        animationSpec = tween(450, easing = FastOutSlowInEasing),
+        label = "enter",
     )
-    val pulse by loop.animateFloat(
-        0.72f, 1f,
-        infiniteRepeatable(tween(760, easing = FastOutSlowInEasing), RepeatMode.Reverse),
+    val scale by animateFloatAsState(
+        targetValue = if (started) 1f else 0.9f,
+        animationSpec = tween(500, easing = FastOutSlowInEasing),
+        label = "scale",
+    )
+    val progress by animateFloatAsState(
+        targetValue = if (started) 1f else 0f,
+        animationSpec = tween(1050, easing = FastOutSlowInEasing),
+        label = "progress",
     )
 
     LaunchedEffect(Unit) {
         started = true
-        delay(1350)
+        delay(1150)
         onDone()
     }
 
     Box(
-        modifier = Modifier.fillMaxSize().background(Void),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(Color(0xFF0C1220), Void, Color(0xFF06080D)),
+                ),
+            ),
         contentAlignment = Alignment.Center,
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier.alpha(enter).padding(24.dp),
+            modifier = Modifier
+                .alpha(enter)
+                .scale(scale)
+                .padding(32.dp),
         ) {
-            Box(contentAlignment = Alignment.Center) {
-                Canvas(
-                    modifier = Modifier
-                        .size(104.dp)
-                        .graphicsLayer { rotationZ = spin * 360f },
-                ) {
-                    val stroke = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round)
-                    drawArc(Violet, 0f, 86f, false, style = stroke)
-                    drawArc(Cyan, 180f, 86f, false, style = stroke)
-                    drawArc(Color(0x223DDC97), 90f, 180f, false, style = Stroke(width = 1.dp.toPx()))
-                    drawCircle(Cyan, radius = 3.dp.toPx(), center = Offset(size.width, size.height / 2f))
-                }
-                Text(
-                    "X",
-                    color = TextHi,
-                    fontSize = 30.sp,
-                    fontWeight = FontWeight.Black,
-                    fontFamily = XinDisplay,
-                    modifier = Modifier.scale(pulse),
+            Box(
+                modifier = Modifier
+                    .size(76.dp)
+                    .clip(RoundedCornerShape(22.dp))
+                    .background(PanelHi)
+                    .border(1.5.dp, Cyan.copy(alpha = 0.6f), RoundedCornerShape(22.dp)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.AutoAwesome,
+                    contentDescription = null,
+                    tint = Cyan,
+                    modifier = Modifier.size(36.dp),
                 )
             }
-
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(18.dp))
             Text(
                 "XIN HUB",
                 color = TextHi,
-                fontSize = 25.sp,
-                fontWeight = FontWeight.Bold,
+                fontSize = 26.sp,
+                fontWeight = FontWeight.Black,
                 fontFamily = XinDisplay,
-                letterSpacing = 3.sp,
+                letterSpacing = 2.sp,
             )
             Spacer(Modifier.height(4.dp))
-            Text("SKIN · EFFECT · PREP", color = TextLow, fontSize = 9.sp, letterSpacing = 2.sp)
-
-            Spacer(Modifier.height(24.dp))
+            Text(
+                "MLBB COMPANION",
+                color = Cyan,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 2.2.sp,
+            )
+            Spacer(Modifier.height(28.dp))
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(0.58f)
-                    .height(3.dp)
+                    .fillMaxWidth(0.55f)
+                    .height(4.dp)
                     .clip(RoundedCornerShape(50))
-                    .background(Line),
+                    .background(Panel)
+                    .border(0.5.dp, Line, RoundedCornerShape(50)),
             ) {
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth(sweep)
-                        .height(3.dp)
+                        .fillMaxWidth(progress)
+                        .height(4.dp)
                         .clip(RoundedCornerShape(50))
-                        .background(Brush.horizontalGradient(listOf(Violet, Cyan))),
+                        .background(Cyan),
                 )
             }
-            Spacer(Modifier.height(9.dp))
-            Text("preparing the bench", color = TextLow, fontSize = 9.sp)
+            Spacer(Modifier.height(10.dp))
+            Text(
+                "Loading catalog...",
+                color = TextLow,
+                fontSize = 10.5.sp,
+            )
         }
     }
 }

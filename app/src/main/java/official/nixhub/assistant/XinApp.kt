@@ -32,13 +32,14 @@ object Xin {
         catalog = CatalogStore(app)
         injector = Injector(app, prefs)
         images = ImageLoader.Builder(app)
-            .memoryCache { MemoryCache.Builder(app).maxSizePercent(0.18).build() }
+            .memoryCache { MemoryCache.Builder(app).maxSizePercent(0.22).build() }
             .diskCache {
                 DiskCache.Builder()
                     .directory(app.cacheDir.resolve("image_cache"))
-                    .maxSizeBytes(80L * 1024 * 1024)
+                    .maxSizeBytes(100L * 1024 * 1024)
                     .build()
             }
+            .allowRgb565(true)
             .crossfade(false)
             .respectCacheHeaders(true)
             .build()

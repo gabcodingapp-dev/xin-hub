@@ -2,16 +2,18 @@ package official.nixhub.assistant.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Void = Color(0xFF090A0E)
-val Deep = Color(0xFF0E1015)
-val Panel = Color(0xFF14161C)
-val PanelHi = Color(0xFF1B1E26)
-val Line = Color(0xFF262A33)
+val Void = Color(0xFF080B10)
+val Deep = Color(0xFF0C1018)
+val Panel = Color(0xFF121722)
+val PanelHi = Color(0xFF182030)
+val Line = Color(0xFF222B3C)
 
-val Violet = Color(0xFF8B5CF6)
-val VioletDeep = Color(0xFF5B21B6)
-val Cyan = Color(0xFF3DDC97)
-val CyanDeep = Color(0xFF187A56)
+val Gold = Color(0xFFEAB308)
+val GoldDeep = Color(0xFF926E06)
+val Violet = Color(0xFFEAB308)
+val VioletDeep = Color(0xFF854D0E)
+val Cyan = Color(0xFFEAB308)
+val CyanDeep = Color(0xFF713F12)
 val Rose = Color(0xFFF472B6)
 val Amber = Color(0xFFFBBF24)
 val Lime = Color(0xFFB6F36A)
