@@ -1,68 +1,24 @@
 # XIN HUB
 
-Android skin, effect and lobby injector for Mobile Legends. Built as a native Kotlin + Compose
-app, signed with the repo keystore, assembled by GitHub Actions on every push.
+XIN HUB is an Android skin, effect and lobby injector for Mobile Legends. It ships a 1,550-skin catalog, 487 GB loading screens, free Second Form upgrades, live previews and one-tap apply.
 
-```
-package   official.xinhub.assistant
-version   1.6.0 (7)
-minSdk    26
-target    35
-```
+## App
 
-## What it does
+- **Skins** — 1,550 looks, 874 injectable, role chips, hero archive and a landscape skin pager.
+- **Effects** — recalls, emotes, trails, eliminations, borders and vehicle effects.
+- **GB Loading Screen** — 487 intros with live video previews and a stock-intro restore kit.
+- **Upgrade Skins** — 151 looks, 9 free Second Forms, slot picker and protection guard. No keys.
+- **Lobby sounds** — 9 tracks with preview and one-tap apply.
+- **Library** — every applied item backed up, with per-item restore and restore-all.
+- **Permissions** — Shizuku first, SAF and root as fallbacks.
 
-| Surface | Behaviour |
-|---|---|
-| Hero skins | 1550 catalogued, **874 with a live script**. Role chips show live counts. Open a hero, then swipe through large landscape skin cards and tap to apply or upgrade. The Upgrade tab is universal: every injectable look can be placed on any owned slot. |
-| Effects | Recalls, avatar borders, emotes, respawns, trails, eliminations, radiant kits, flying vehicles. |
-| Preparation | Dedicated GB Loading Screen gallery with 487 intros, live video previews, a stock-intro restore kit, and a broader Prep tab. |
-| Upgrade skins | Free universal upgrade center with 151 looks, 9 Second Forms, Restoration Protection guard, slot picker, and route metadata. No keys, no premium tier. |
-| Lobby sounds | 9 tracks, streamed preview, one-tap apply. |
-| Collections | 88 release tags from the asset catalog. |
-| Custom skin | Import any zip from storage; it is normalised, backed up and injected like a catalog item. |
-| Library | Every applied item is listed with a per-item restore and a restore-all. |
-| Guides | Setup walkthrough with screenshots. |
-| Catalog sync | Bundled snapshot loads instantly, remote manifest refreshes in the background. |
+## Animated bits
 
-## Storage backends
-
-- **SAF tree** — pick `Android/data/com.mobile.legends/files`. Persistable grant, no root.
-- **Shizuku** — adb-shell uid, no superuser prompt, full write access to the game folder.
-- **Root** — `su` shell writes straight into `dragon2017/assets`.
-
-All three sit behind the `Storage` interface, so the injector code is identical for each.
-
-## Injection model
-
-A script archive is a tree rooted at `dragon2017/assets` (`Art/...`, `Document/...`,
-`Interface/...`). Before any file is overwritten, the original is copied into
-`filesDir/backups/<jobId>/<relative path>`. Restore walks that tree and writes it back, so it
-never depends on the game redownloading assets. Injection runs behind an animated progress
-overlay with download byte counts, phase labels, file counts and a completion state. Success and failure also surface as in-app messages.
-
-## Build
-
-```bash
-gradle :app:assembleDebug
-gradle :app:assembleRelease
-```
-
-CI does the same on `ubuntu-latest` with JDK 17 and Gradle 8.9. Tag `v1.6.0` to publish a
-release with the APKs attached.
-
-## Signing
-
-`keystore/xin-release.jks`, alias `xinhub`, store and key password `xinhub2026`. Keep this file
-in the repo so every build upgrades over the last one. Lose it and updates require a reinstall.
-
-## Assets
-
-Catalog and art live in a separate repo: `gabcodingapp-dev/xin-assets`. The app reads
-`manifest.json` and the files under `catalog/`. A snapshot of that catalog is bundled in
-`app/src/main/assets/catalog` so first launch works offline.
-
-## Credits
+- Split X splash and pulsing hero tiles set the theme on launch.
+- The GB Loading Screen gallery plays looping video previews before apply.
+- The injection overlay spins an X ring while bytes, phase labels and file counts climb.
+- Success snaps to a check mark; failures land in the same overlay with the exact error.
+- Restore, catalog refresh and Second Form guards run through that same motion.
 
 Developed by Gab.
 
