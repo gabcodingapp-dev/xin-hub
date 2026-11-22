@@ -1,0 +1,47 @@
+{
+ "schema_version": 1,
+ "data": [
+  {
+   "id": "hero-skins",
+   "title": "Hero Skins",
+   "description": "Visual, upgrade, painted, and custom hero skins.",
+   "image": "https://raw.githubusercontent.com/Sparkies01/DownloadScript/main/Menu/Images/QuickMenu/hero-guides-v2.png"
+  },
+  {
+   "id": "effects",
+   "title": "Effects",
+   "description": "Browse recalls, emotes, trails, eliminations, and more.",
+   "image": "https://raw.githubusercontent.com/Sparkies01/DownloadScript/main/Menu/Images/QuickMenu/preparation-v2.png"
+  },
+  {
+   "id": "backgrounds",
+   "title": "Backgrounds",
+   "description": "Customize the lobby and interface background.",
+   "image": "https://raw.githubusercontent.com/Sparkies01/DownloadScript/main/Menu/Images/QuickMenu/backgrounds-v2.png"
+  },
+  {
+   "id": "device-performance",
+   "title": "Daily Rewards",
+   "description": "Complete daily tasks and collect your rewards.",
+   "image": "https://raw.githubusercontent.com/Sparkies01/DownloadScript/main/Menu/Images/QuickMenu/daily-rewards-v2.png"
+  },
+  {
+   "id": "remove-ads",
+   "title": "Premium Access",
+   "description": "Remove ads and protect skins from automatic restoration.",
+   "image": "https://raw.githubusercontent.com/Sparkies01/DownloadScript/main/Menu/Images/QuickMenu/remove-ads-v2.png"
+  },
+  {
+   "id": "fix-missing-ui",
+   "title": "Fix Missing UI",
+   "description": "Open the guide when MLBB lobby UI or skin visuals are missing.",
+   "image": "https://raw.githubusercontent.com/Sparkies01/DownloadScript/main/Menu/Images/QuickMenu/fix-missing-ui-v1.png"
+  },
+  {
+   "id": "create-own-emote",
+   "title": "Create Own Emote",
+   "description": "Open the tutorial for creating a personal emote design.",
+   "image": "https://raw.githubusercontent.com/Sparkies01/DownloadScript/main/Menu/Images/QuickMenu/create-own-emote-v1.png"
+  }
+ ]
+}

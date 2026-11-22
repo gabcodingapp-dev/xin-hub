@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.XinHub" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">#07060F</item>
+        <item name="android:statusBarColor">#00000000</item>
+        <item name="android:navigationBarColor">#07060F</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+    </style>
+</resources>

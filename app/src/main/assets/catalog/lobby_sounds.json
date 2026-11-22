@@ -1,0 +1,68 @@
+{
+ "schema_version": 1,
+ "data": [
+  {
+   "title": "BIRDS OF A FEATHER",
+   "artist": "Billie Eilish",
+   "image": "https://raw.githubusercontent.com/Sparkies01/DownloadScript/main/CustomBGSounds/BIRDS%20OF%20A%20FEATHER.jpeg",
+   "download": "https://raw.githubusercontent.com/Sparkies01/DownloadScript/main/CustomBGSounds/BIRDS%20OF%20A%20FEATHER.zip",
+   "preview": "https://raw.githubusercontent.com/Sparkies01/DownloadScript/main/CustomBGSounds/BIRDS%20OF%20A%20FEATHER%20preview.mp3"
+  },
+  {
+   "title": "Impostor Syndrome",
+   "artist": "Sidney Gish",
+   "image": "https://raw.githubusercontent.com/Sparkies01/DownloadScript/main/CustomBGSounds/Impostor%20Syndrome.jpeg",
+   "download": "https://raw.githubusercontent.com/Sparkies01/DownloadScript/main/CustomBGSounds/Impostor%20Syndrome.zip",
+   "preview": "https://raw.githubusercontent.com/Sparkies01/DownloadScript/main/CustomBGSounds/Impostor%20Syndrome%20preview.mp3"
+  },
+  {
+   "title": "RASTUNNA",
+   "artist": "GHR",
+   "image": "https://raw.githubusercontent.com/Sparkies01/DownloadScript/main/CustomBGSounds/RASTUNNA.jpeg",
+   "download": "https://raw.githubusercontent.com/Sparkies01/DownloadScript/main/CustomBGSounds/RASTUNNA.zip",
+   "preview": "https://raw.githubusercontent.com/Sparkies01/DownloadScript/main/CustomBGSounds/RASTUNNA%20preview.mp3"
+  },
+  {
+   "title": "Raindance x One Dance",
+   "artist": "Treyvik",
+   "image": "https://raw.githubusercontent.com/Sparkies01/DownloadScript/main/CustomBGSounds/Raindance%20x%20One%20Dance.jpeg",
+   "download": "https://raw.githubusercontent.com/Sparkies01/DownloadScript/main/CustomBGSounds/Raindance%20x%20One%20Dance.zip",
+   "preview": "https://raw.githubusercontent.com/Sparkies01/DownloadScript/main/CustomBGSounds/Raindance%20x%20One%20Dance%20preview.mp3"
+  },
+  {
+   "title": "Smoke",
+   "artist": "Nopetsallowed",
+   "image": "https://raw.githubusercontent.com/Sparkies01/DownloadScript/main/CustomBGSounds/Smoke.jpeg",
+   "download": "https://raw.githubusercontent.com/Sparkies01/DownloadScript/main/CustomBGSounds/Smoke.zip",
+   "preview": "https://raw.githubusercontent.com/Sparkies01/DownloadScript/main/CustomBGSounds/Smoke%20preview.mp3"
+  },
+  {
+   "title": "Tamaraw",
+   "artist": "Uncle Dags",
+   "image": "https://raw.githubusercontent.com/Sparkies01/DownloadScript/main/CustomBGSounds/Tamaraw.jpeg",
+   "download": "https://raw.githubusercontent.com/Sparkies01/DownloadScript/main/CustomBGSounds/Tamaraw.zip",
+   "preview": "https://raw.githubusercontent.com/Sparkies01/DownloadScript/main/CustomBGSounds/Tamaraw%20preview.mp3"
+  },
+  {
+   "title": "Viva La Raza",
+   "artist": "Uncle Dags",
+   "image": "https://raw.githubusercontent.com/Sparkies01/DownloadScript/main/CustomBGSounds/Viva%20La%20Raza.jpeg",
+   "download": "https://raw.githubusercontent.com/Sparkies01/DownloadScript/main/CustomBGSounds/Viva%20La%20Raza.zip",
+   "preview": "https://raw.githubusercontent.com/Sparkies01/DownloadScript/main/CustomBGSounds/Viva%20La%20Raza%20preview.mp3"
+  },
+  {
+   "title": "WILDFLOWER",
+   "artist": "Billie Eilish",
+   "image": "https://raw.githubusercontent.com/Sparkies01/DownloadScript/main/CustomBGSounds/WILDFLOWER.jpeg",
+   "download": "https://raw.githubusercontent.com/Sparkies01/DownloadScript/main/CustomBGSounds/WILDFLOWER.zip",
+   "preview": "https://raw.githubusercontent.com/Sparkies01/DownloadScript/main/CustomBGSounds/WILDFLOWER%20preview.mp3"
+  },
+  {
+   "title": "You",
+   "artist": "Lloyd",
+   "image": "https://raw.githubusercontent.com/Sparkies01/DownloadScript/main/CustomBGSounds/You.jpeg",
+   "download": "https://raw.githubusercontent.com/Sparkies01/DownloadScript/main/CustomBGSounds/You.zip",
+   "preview": "https://raw.githubusercontent.com/Sparkies01/DownloadScript/main/CustomBGSounds/You%20preview.mp3"
+  }
+ ]
+}

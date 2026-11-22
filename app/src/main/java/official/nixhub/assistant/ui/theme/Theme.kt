@@ -1,0 +1,91 @@
+package official.nixhub.assistant.ui.theme
+
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import androidx.compose.material3.Typography
+
+private val XinScheme = darkColorScheme(
+    primary = Violet,
+    onPrimary = TextHi,
+    primaryContainer = VioletDeep,
+    onPrimaryContainer = TextHi,
+    secondary = Cyan,
+    onSecondary = Void,
+    secondaryContainer = CyanDeep,
+    onSecondaryContainer = TextHi,
+    tertiary = Rose,
+    background = Void,
+    onBackground = TextHi,
+    surface = Panel,
+    onSurface = TextHi,
+    surfaceVariant = PanelHi,
+    onSurfaceVariant = TextMid,
+    outline = Line,
+    error = Danger,
+)
+
+private val XinType = Typography(
+    displaySmall = TextStyle(
+        fontFamily = FontFamily.SansSerif,
+        fontWeight = FontWeight.Black,
+        fontSize = 30.sp,
+        letterSpacing = (-0.5).sp,
+    ),
+    headlineMedium = TextStyle(
+        fontFamily = FontFamily.SansSerif,
+        fontWeight = FontWeight.Bold,
+        fontSize = 22.sp,
+        letterSpacing = (-0.2).sp,
+    ),
+    titleLarge = TextStyle(
+        fontFamily = FontFamily.SansSerif,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 18.sp,
+    ),
+    titleMedium = TextStyle(
+        fontFamily = FontFamily.SansSerif,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 15.sp,
+    ),
+    bodyLarge = TextStyle(
+        fontFamily = FontFamily.SansSerif,
+        fontWeight = FontWeight.Normal,
+        fontSize = 15.sp,
+        lineHeight = 22.sp,
+    ),
+    bodyMedium = TextStyle(
+        fontFamily = FontFamily.SansSerif,
+        fontWeight = FontWeight.Normal,
+        fontSize = 13.sp,
+        lineHeight = 19.sp,
+    ),
+    labelLarge = TextStyle(
+        fontFamily = FontFamily.SansSerif,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 13.sp,
+        letterSpacing = 0.2.sp,
+    ),
+    labelSmall = TextStyle(
+        fontFamily = FontFamily.SansSerif,
+        fontWeight = FontWeight.Medium,
+        fontSize = 10.sp,
+        letterSpacing = 0.8.sp,
+    ),
+)
+
+@Composable
+fun XinTheme(content: @Composable () -> Unit) {
+    @Suppress("UNUSED_EXPRESSION")
+    isSystemInDarkTheme()
+    MaterialTheme(
+        colorScheme = XinScheme,
+        typography = XinType,
+        content = content,
+    )
+}
