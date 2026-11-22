@@ -93,7 +93,7 @@ fun HeroesScreen(hub: HubState, onHero: (String) -> Unit) {
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.fillMaxSize(),
             ) {
-                items(shown, key = { it.slug }) { hero -> HeroTile(hero, onHero) }
+                items(shown, key = { it.slug }) { hero -> HeroTile(hero) { onHero(hero.slug) } }
             }
         }
     }

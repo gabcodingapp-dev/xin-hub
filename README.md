@@ -14,9 +14,9 @@ target    35
 
 | Surface | Behaviour |
 |---|---|
-| Hero skins | 1550 catalogued, **874 with a live script** (including 142 painted/upgrade). Search, hero filter, tag filter, ready-only filter, All / Upgrade / Custom grouping. |
+| Hero skins | 1550 catalogued, **874 with a live script** (including 142 painted/upgrade). Browse by role, open a hero, then swap an owned slot to a Visual / Upgrade / Custom look. |
 | Effects | Recalls, avatar borders, emotes, respawns, trails, eliminations, radiant kits, flying vehicles. |
-| Loading intros | 487 animated intros with previews, split by category. |
+| Preparation | 487 loading intros and lobby/interface backgrounds, split by category, with the same apply flow as effects. |
 | Lobby sounds | 9 tracks, streamed preview, one-tap apply. |
 | Collections | 88 release tags from the asset catalog. |
 | Custom skin | Import any zip from storage; it is normalised, backed up and injected like a catalog item. |
@@ -46,7 +46,7 @@ gradle :app:assembleDebug
 gradle :app:assembleRelease
 ```
 
-CI does the same on `ubuntu-latest` with JDK 17 and Gradle 8.9. Tag `v1.0.1` to publish a
+CI does the same on `ubuntu-latest` with JDK 17 and Gradle 8.9. Tag `v1.3.0` to publish a
 release with the APKs attached.
 
 ## Signing
