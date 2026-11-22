@@ -50,7 +50,10 @@ import official.xinhub.assistant.ui.theme.Void
 import official.xinhub.assistant.ui.theme.XinBody
 
 @Composable
-fun Modifier.pressable(onClick: () -> Unit, enabled: Boolean = true): Modifier {
+fun Modifier.pressable(onClick: () -> Unit): Modifier = pressable(true, onClick)
+
+@Composable
+fun Modifier.pressable(enabled: Boolean, onClick: () -> Unit): Modifier {
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
     val scale by animateFloatAsState(if (pressed && enabled) 0.965f else 1f, tween(90))

@@ -151,7 +151,7 @@ fun PrimaryAction(
         modifier = modifier
             .clip(RoundedCornerShape(11.dp))
             .background(fill)
-            .pressable(onClick, enabled),
+            .pressable(enabled, onClick),
         contentAlignment = Alignment.Center,
     ) {
         Row(

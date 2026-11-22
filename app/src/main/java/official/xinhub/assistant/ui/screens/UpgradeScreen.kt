@@ -163,7 +163,7 @@ fun UpgradeScreen(hub: HubState, onBack: () -> Unit, onApply: (Job) -> Unit) {
                         horizontalArrangement = Arrangement.spacedBy(9.dp),
                     ) {
                         items(secondForms, key = { it.id }) { entry ->
-                            SecondFormTile(entry) { selected = it }
+                            SecondFormTile(entry) { selected = entry }
                         }
                     }
                 }
@@ -591,7 +591,7 @@ private fun UpgradeSlotRow(skin: Skin, enabled: Boolean, onClick: () -> Unit) {
             .clip(RoundedCornerShape(10.dp))
             .background(if (enabled) Panel else Panel.copy(alpha = 0.55f))
             .border(1.dp, Line, RoundedCornerShape(10.dp))
-            .pressable(onClick, enabled)
+            .pressable(enabled, onClick)
             .padding(7.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

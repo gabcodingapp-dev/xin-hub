@@ -268,7 +268,8 @@ fun HeroDetailScreen(
                 contentPadding = PaddingValues(horizontal = 14.dp, vertical = 3.dp),
                 horizontalArrangement = Arrangement.spacedBy(7.dp),
             ) {
-                items(windowStart until windowEnd, key = { shown[it].id }) { index ->
+                items(count = windowEnd - windowStart, key = { windowStart + it }) { offset ->
+                    val index = windowStart + offset
                     Box(
                         modifier = Modifier
                             .size(width = 48.dp, height = 62.dp)
