@@ -176,11 +176,18 @@ class ShizukuStorage(private val base: String) : Storage {
     override val writable: Boolean get() = ShizukuAccess.granted()
 
     private fun sh(cmd: String, input: ByteArray? = null): Pair<Int, ByteArray> {
-        val p = Shizuku.newProcess(arrayOf("sh", "-c", cmd), null, null)
-        if (input != null) p.outputStream.use { it.write(input) } else p.outputStream.close()
-        val out = p.inputStream.use { it.readBytes() }
-        val code = p.waitFor()
-        return code to out
+        val process = ShizukuAccess.newProcess(arrayOf("sh", "-c", cmd))
+            ?: return -1 to ByteArray(0)
+        return try {
+            if (input != null) process.outputStream.use { it.write(input) } else process.outputStream.close()
+            val out = process.inputStream.use { it.readBytes() }
+            val code = process.waitFor()
+            code to out
+        } catch (t: Throwable) {
+            -1 to ByteArray(0)
+        } finally {
+            runCatching { process.destroy() }
+        }
     }
 
     private fun q(path: String): String = "'" + path.replace("'", "'\\''") + "'"
@@ -266,4 +273,25 @@ object ShizukuAccess {
     }
 
     fun assets(): Storage = ShizukuStorage(RootStorage.ASSETS)
+
+    /**
+     * Shizuku moved the process helper between releases: `Shizuku.newProcess` in early builds,
+     * `rikka.shizuku.Shell.newProcess` from 13. Resolve at runtime so neither rename breaks us.
+     */
+    fun newProcess(cmd: Array<String>): Process? {
+        val argTypes = arrayOf(Array<String>::class.java, Array<String>::class.java, String::class.java)
+        val argValues = arrayOf<Any?>(cmd, null, null)
+        for (owner in listOf("rikka.shizuku.Shell", "rikka.shizuku.Shizuku")) {
+            try {
+                val cls = Class.forName(owner)
+                val method = cls.getDeclaredMethod("newProcess", *argTypes)
+                method.isAccessible = true
+                val out = method.invoke(null, *argValues)
+                if (out is Process) return out
+            } catch (t: Throwable) {
+                // Try the next owner name.
+            }
+        }
+        return null
+    }
 }
