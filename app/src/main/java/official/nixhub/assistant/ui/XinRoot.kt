@@ -30,6 +30,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -95,6 +96,34 @@ fun XinRoot() {
         }
     }
 
+    val zipPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) hub.importArchive(uri)
+    }
+
+    DisposableEffect(Unit) {
+        val permission = rikka.shizuku.Shizuku.OnRequestPermissionResultListener { _, _ ->
+            hub.onShizukuResult()
+        }
+        val binder = rikka.shizuku.Shizuku.OnBinderReceivedListener {
+            hub.refreshShizuku()
+        }
+        val dead = rikka.shizuku.Shizuku.OnBinderDeadListener {
+            hub.refreshShizuku()
+        }
+        runCatching {
+            rikka.shizuku.Shizuku.addRequestPermissionResultListener(permission)
+            rikka.shizuku.Shizuku.addBinderReceivedListenerSticky(binder)
+            rikka.shizuku.Shizuku.addBinderDeadListener(dead)
+        }
+        onDispose {
+            runCatching {
+                rikka.shizuku.Shizuku.removeRequestPermissionResultListener(permission)
+                rikka.shizuku.Shizuku.removeBinderReceivedListener(binder)
+                rikka.shizuku.Shizuku.removeBinderDeadListener(dead)
+            }
+        }
+    }
+
     LaunchedEffect(Unit) { hub.boot() }
 
     LaunchedEffect(hub.message) {
@@ -140,6 +169,8 @@ fun XinRoot() {
                     else -> SettingsScreen(
                         hub = hub,
                         onPickFolder = { picker.launch(null) },
+                        onImport = { zipPicker.launch(arrayOf("application/zip", "application/octet-stream", "application/x-zip-compressed", "*/*")) },
+                        onGuides = { route = "guides" },
                     )
                 }
             }

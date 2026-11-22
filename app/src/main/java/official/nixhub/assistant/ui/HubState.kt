@@ -16,6 +16,7 @@ import official.nixhub.assistant.data.Job
 import official.nixhub.assistant.data.LoadState
 import official.nixhub.assistant.data.RootStorage
 import official.nixhub.assistant.data.SafStorage
+import official.nixhub.assistant.data.ShizukuAccess
 import official.nixhub.assistant.data.Storage
 
 /** Single source of truth for the shell: catalog, storage binding, running jobs. */
@@ -36,6 +37,13 @@ class HubState(private val ctx: Context) {
         private set
 
     var message by mutableStateOf<String?>(null)
+
+    var shizuku by mutableStateOf(ShizukuAccess.status(ctx))
+        private set
+
+    fun refreshShizuku() {
+        shizuku = ShizukuAccess.status(ctx)
+    }
 
     val catalog: Catalog get() = (load as? LoadState.Ready)?.catalog ?: Catalog.EMPTY
 
@@ -89,8 +97,77 @@ class HubState(private val ctx: Context) {
                 return@launch
             }
             Xin.prefs.useRoot = true
+            Xin.prefs.useShizuku = false
             storage = RootStorage(RootStorage.ASSETS)
             message = "Connected · root"
+        }
+    }
+
+    fun connectShizuku() {
+        refreshShizuku()
+        if (!shizuku.installed) {
+            message = "Install Shizuku first, then come back"
+            return
+        }
+        if (!shizuku.running) {
+            message = "Open Shizuku and start the service"
+            return
+        }
+        if (!shizuku.granted) {
+            ShizukuAccess.request()
+            message = "Approve the Shizuku prompt"
+            return
+        }
+        Xin.prefs.useShizuku = true
+        Xin.prefs.useRoot = false
+        Xin.prefs.storageUri = null
+        storage = ShizukuAccess.assets()
+        message = "Connected · shizuku"
+    }
+
+    fun onShizukuResult() {
+        refreshShizuku()
+        if (shizuku.granted) {
+            Xin.prefs.useShizuku = true
+            Xin.prefs.useRoot = false
+            Xin.prefs.storageUri = null
+            storage = ShizukuAccess.assets()
+            message = "Shizuku access granted"
+        } else {
+            message = "Shizuku permission denied"
+        }
+    }
+
+    fun importArchive(uri: Uri) {
+        val target = storage
+        if (target == null) {
+            message = "Connect the game folder first"
+            return
+        }
+        if (progress.running) return
+        scope.launch {
+            progress = Injector.Progress(running = true, label = "reading zip")
+            val label = resolveName(uri)
+            val job = Xin.injector.stageLocal(ctx, uri, label)
+            if (job == null) {
+                progress = Injector.Progress(error = "that file is not a readable zip", finished = true)
+                return@launch
+            }
+            val result = Xin.injector.apply(target, job) { progress = it }
+            progress = result
+            message = result.error ?: "${job.title} applied · ${result.done} files"
+        }
+    }
+
+    private fun resolveName(uri: Uri): String {
+        val projection = arrayOf(android.provider.OpenableColumns.DISPLAY_NAME)
+        return try {
+            ctx.contentResolver.query(uri, projection, null, null, null)?.use { cursor ->
+                val idx = cursor.getColumnIndex(projection[0])
+                if (idx >= 0 && cursor.moveToFirst()) cursor.getString(idx) else null
+            } ?: "imported skin"
+        } catch (t: Throwable) {
+            "imported skin"
         }
     }
 
@@ -103,6 +180,11 @@ class HubState(private val ctx: Context) {
 
     private suspend fun reconnect() {
         if (storage != null) return
+        refreshShizuku()
+        if (Xin.prefs.useShizuku) {
+            if (ShizukuAccess.granted()) storage = ShizukuAccess.assets()
+            return
+        }
         val uri = Xin.prefs.storageUri
         if (Xin.prefs.useRoot) {
             storage = RootStorage(RootStorage.ASSETS)

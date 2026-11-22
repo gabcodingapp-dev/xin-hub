@@ -69,10 +69,12 @@ fun SkinsScreen(hub: HubState, onApply: (Job) -> Unit) {
     var hero by rememberSaveable { mutableStateOf("") }
     var onlyReady by rememberSaveable { mutableStateOf(false) }
     var onlyTag by rememberSaveable { mutableStateOf("") }
+    var group by rememberSaveable { mutableStateOf("") }
 
-    val filtered = remember(catalog.skins, query, hero, onlyReady, onlyTag) {
+    val filtered = remember(catalog.skins, query, hero, onlyReady, onlyTag, group) {
         catalog.skins.filter { skin ->
             (!onlyReady || skin.injectable) &&
+                (group.isBlank() || skin.group == group) &&
                 (hero.isBlank() || skin.hero == hero) &&
                 (onlyTag.isBlank() || skin.tag == onlyTag) &&
                 (query.isBlank() ||
@@ -111,6 +113,9 @@ fun SkinsScreen(hub: HubState, onApply: (Job) -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             item { FilterChip("Ready only", onlyReady, Cyan) { onlyReady = !onlyReady } }
+            item { FilterChip("All", group.isBlank(), Cyan) { group = "" } }
+            item { FilterChip("Upgrade", group == "upgrade", Violet) { group = if (group == "upgrade") "" else "upgrade" } }
+            item { FilterChip("Custom", group == "custom", Violet) { group = if (group == "custom") "" else "custom" } }
             item { FilterChip("All heroes", hero.isBlank(), Violet) { hero = "" } }
             items(heroes, key = { it }) { name ->
                 FilterChip(name, hero == name, Violet) {
@@ -186,6 +191,8 @@ fun SkinCard(skin: Skin, onClick: () -> Unit) {
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 Pill(skin.tier.ifBlank { "skin" }, tierColor(skin.tier), filled = true)
+                if (skin.group == "upgrade") Pill("upgrade", Cyan)
+                if (skin.group == "custom") Pill("custom", Violet)
             }
             if (!skin.injectable) {
                 Box(

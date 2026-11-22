@@ -12,8 +12,14 @@ data class Skin(
     val image: String?,
     val script: String?,
     val archive: String?,
+    val upgrade: Boolean = false,
 ) {
     val injectable: Boolean get() = !script.isNullOrBlank()
+    val group: String get() = when {
+        source == "custom" -> "custom"
+        upgrade || source == "painted" -> "upgrade"
+        else -> "visual"
+    }
 }
 
 data class Hero(

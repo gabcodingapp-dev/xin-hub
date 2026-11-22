@@ -24,6 +24,13 @@ class Prefs(ctx: Context) {
             storageRevision.value = storageRevision.value + 1
         }
 
+    var useShizuku: Boolean
+        get() = sp.getBoolean("use_shizuku", false)
+        set(value) {
+            sp.edit().putBoolean("use_shizuku", value).apply()
+            storageRevision.value = storageRevision.value + 1
+        }
+
     var firstRun: Boolean
         get() = sp.getBoolean("first_run", true)
         set(value) = sp.edit().putBoolean("first_run", value).apply()

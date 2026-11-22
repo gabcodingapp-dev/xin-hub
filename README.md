@@ -5,7 +5,7 @@ app, signed with the repo keystore, assembled by GitHub Actions on every push.
 
 ```
 package   official.nixhub.assistant
-version   1.0.0 (1)
+version   1.1.0 (2)
 minSdk    26
 target    35
 ```
@@ -14,11 +14,12 @@ target    35
 
 | Surface | Behaviour |
 |---|---|
-| Hero skins | 1550 catalogued, 743 with a live script. Search, hero filter, tag filter, ready-only filter. |
+| Hero skins | 1550 catalogued, **874 with a live script** (including 142 painted/upgrade). Search, hero filter, tag filter, ready-only filter, All / Upgrade / Custom grouping. |
 | Effects | Recalls, avatar borders, emotes, respawns, trails, eliminations, radiant kits, flying vehicles. |
 | Loading intros | 487 animated intros with previews, split by category. |
 | Lobby sounds | 9 tracks, streamed preview, one-tap apply. |
 | Collections | 88 release tags from the asset catalog. |
+| Custom skin | Import any zip from storage; it is normalised, backed up and injected like a catalog item. |
 | Library | Every applied item is listed with a per-item restore and a restore-all. |
 | Guides | Setup walkthrough with screenshots. |
 | Catalog sync | Bundled snapshot loads instantly, remote manifest refreshes in the background. |
@@ -26,9 +27,10 @@ target    35
 ## Storage backends
 
 - **SAF tree** — pick `Android/data/com.mobile.legends/files`. Persistable grant, no root.
+- **Shizuku** — adb-shell uid, no superuser prompt, full write access to the game folder.
 - **Root** — `su` shell writes straight into `dragon2017/assets`.
 
-Both are behind the `Storage` interface, so the injector code is identical for either.
+All three sit behind the `Storage` interface, so the injector code is identical for each.
 
 ## Injection model
 

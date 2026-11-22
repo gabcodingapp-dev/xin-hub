@@ -33,6 +33,7 @@ object Json {
             image = o.optString("image").takeIf { it.isNotBlank() && it != "null" },
             script = o.optString("script").takeIf { it.isNotBlank() && it != "null" },
             archive = o.optString("archive").takeIf { it.isNotBlank() && it != "null" },
+            upgrade = o.optBoolean("upgrade", false),
         )
     }
 

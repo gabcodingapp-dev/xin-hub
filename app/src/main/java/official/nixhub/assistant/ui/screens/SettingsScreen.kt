@@ -60,9 +60,15 @@ import official.nixhub.assistant.ui.theme.TextMid
 import official.nixhub.assistant.ui.theme.Violet
 
 @Composable
-fun SettingsScreen(hub: HubState, onPickFolder: () -> Unit) {
+fun SettingsScreen(
+    hub: HubState,
+    onPickFolder: () -> Unit,
+    onImport: () -> Unit = {},
+    onGuides: () -> Unit = {},
+) {
     val ctx = LocalContext.current
     var rootOn by remember { mutableStateOf(Xin.prefs.useRoot) }
+    val shizuku = hub.shizuku
 
     fun open(url: String) {
         runCatching { ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
@@ -141,6 +147,92 @@ fun SettingsScreen(hub: HubState, onPickFolder: () -> Unit) {
         item {
             GlassCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(14.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(RoundedCornerShape(11.dp))
+                                .background(Cyan.copy(alpha = 0.12f)),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(Icons.Rounded.Bolt, contentDescription = null, tint = Cyan, modifier = Modifier.size(18.dp))
+                        }
+                        Spacer(Modifier.width(11.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Shizuku", color = TextHi, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                            Text(
+                                when {
+                                    !shizuku.installed -> "not installed"
+                                    shizuku.granted -> "granted · adb shell access"
+                                    shizuku.running -> "running · needs permission"
+                                    else -> "installed · service stopped"
+                                },
+                                color = TextLow,
+                                fontSize = 10.sp,
+                            )
+                        }
+                        Pill(
+                            if (shizuku.granted) "ready" else if (shizuku.running) "idle" else "off",
+                            if (shizuku.granted) Cyan else if (shizuku.running) Violet else Danger,
+                            filled = true,
+                        )
+                    }
+                    Spacer(Modifier.height(10.dp))
+                    Text(
+                        "Same write power as root without the superuser prompt. Start Shizuku, then grant access here.",
+                        color = TextLow,
+                        fontSize = 10.sp,
+                        lineHeight = 15.sp,
+                    )
+                    Spacer(Modifier.height(11.dp))
+                    ActionRow(
+                        if (shizuku.granted) "Reconnect Shizuku" else "Grant Shizuku access",
+                        if (shizuku.installed) "Tap after starting the service" else "Install Shizuku from the store first",
+                        Icons.Rounded.Security,
+                    ) {
+                        hub.connectShizuku()
+                    }
+                }
+            }
+        }
+
+        item {
+            GlassCard(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(14.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(RoundedCornerShape(11.dp))
+                                .background(Violet.copy(alpha = 0.14f)),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(Icons.Rounded.LibraryBooks, contentDescription = null, tint = Violet, modifier = Modifier.size(18.dp))
+                        }
+                        Spacer(Modifier.width(11.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Custom skin", color = TextHi, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                            Text("Import a zip and inject it", color = TextLow, fontSize = 10.sp)
+                        }
+                    }
+                    Spacer(Modifier.height(10.dp))
+                    Text(
+                        "Accepts any archive with dragon2017/assets inside, or bare Art / Document / Interface folders. Originals are backed up first.",
+                        color = TextLow,
+                        fontSize = 10.sp,
+                        lineHeight = 15.sp,
+                    )
+                    Spacer(Modifier.height(11.dp))
+                    ActionRow("Pick a skin zip", "From Downloads or any file manager", Icons.Rounded.FolderOpen) {
+                        onImport()
+                    }
+                }
+            }
+        }
+
+        item {
+            GlassCard(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(14.dp)) {
                     ActionRow("Refresh catalog", "Pull the newest skins and effects", Icons.Rounded.Refresh) {
                         hub.refresh()
                     }
@@ -161,7 +253,7 @@ fun SettingsScreen(hub: HubState, onPickFolder: () -> Unit) {
             GlassCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(14.dp)) {
                     ActionRow("Setup guide", "Step by step with screenshots", Icons.Rounded.LibraryBooks) {
-                        hub.say("Open Guides from Home")
+                        onGuides()
                     }
                     Spacer(Modifier.height(8.dp))
                     ActionRow("Project source", Config.PROJECT_URL, Icons.Rounded.Info) {

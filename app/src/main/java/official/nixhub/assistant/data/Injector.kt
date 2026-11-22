@@ -33,10 +33,39 @@ class Injector(private val ctx: Context, private val prefs: Prefs) {
     }
 
     suspend fun fetch(job: Job, onBytes: (Long) -> Unit = {}): File? = withContext(Dispatchers.IO) {
+        if (job.script.startsWith("file:")) {
+            val path = job.script.removePrefix("file://")
+            val local = File(path)
+            return@withContext if (local.exists() && local.length() > 0) local else null
+        }
         val target = zipPath(job)
         if (target.exists() && target.length() > 0) return@withContext target
         Net.download(job.script, target, onBytes)
     }
+
+    /** Copies a user-picked archive into app cache and returns a job that can be applied. */
+    suspend fun stageLocal(ctx: Context, uri: android.net.Uri, label: String): Job? =
+        withContext(Dispatchers.IO) {
+            val name = label.ifBlank { "custom-skin" }
+            val safe = name.replace(Regex("[^A-Za-z0-9 ._-]"), "_").take(48)
+            val dest = File(zipDir, "custom_${System.currentTimeMillis()}_$safe.zip")
+            try {
+                ctx.contentResolver.openInputStream(uri)?.use { input ->
+                    dest.outputStream().use { out -> input.copyTo(out) }
+                } ?: return@withContext null
+            } catch (t: Throwable) {
+                return@withContext null
+            }
+            if (!dest.exists() || dest.length() == 0L) return@withContext null
+            Job(
+                id = "custom-" + dest.nameWithoutExtension,
+                kind = Job.Kind.SKIN,
+                title = name,
+                subtitle = "imported zip",
+                script = "file://${dest.absolutePath}",
+                image = null,
+            )
+        }
 
     suspend fun apply(
         storage: Storage,
