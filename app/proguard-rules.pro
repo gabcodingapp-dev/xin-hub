@@ -1,4 +1,4 @@
--keep class official.nixhub.assistant.** { *; }
+-keep class official.xinhub.assistant.** { *; }
 -keepattributes *Annotation*
 -dontwarn org.jetbrains.annotations.**
 -dontwarn coil.**

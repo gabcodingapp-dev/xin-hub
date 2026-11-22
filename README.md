@@ -4,8 +4,8 @@ Android skin, effect and lobby injector for Mobile Legends. Built as a native Ko
 app, signed with the repo keystore, assembled by GitHub Actions on every push.
 
 ```
-package   official.nixhub.assistant
-version   1.5.0 (6)
+package   official.xinhub.assistant
+version   1.6.0 (7)
 minSdk    26
 target    35
 ```
@@ -16,7 +16,8 @@ target    35
 |---|---|
 | Hero skins | 1550 catalogued, **874 with a live script**. Role chips show live counts. Open a hero, then swipe through large landscape skin cards and tap to apply or upgrade. The Upgrade tab is universal: every injectable look can be placed on any owned slot. |
 | Effects | Recalls, avatar borders, emotes, respawns, trails, eliminations, radiant kits, flying vehicles. |
-| Preparation | 487 loading intros and lobby/interface backgrounds, split by category, with the same apply flow as effects. |
+| Preparation | Dedicated GB Loading Screen gallery with 487 intros, live video previews, a stock-intro restore kit, and a broader Prep tab. |
+| Upgrade skins | Free universal upgrade center with 151 looks, 9 Second Forms, Restoration Protection guard, slot picker, and route metadata. No keys, no premium tier. |
 | Lobby sounds | 9 tracks, streamed preview, one-tap apply. |
 | Collections | 88 release tags from the asset catalog. |
 | Custom skin | Import any zip from storage; it is normalised, backed up and injected like a catalog item. |
@@ -47,7 +48,7 @@ gradle :app:assembleDebug
 gradle :app:assembleRelease
 ```
 
-CI does the same on `ubuntu-latest` with JDK 17 and Gradle 8.9. Tag `v1.5.0` to publish a
+CI does the same on `ubuntu-latest` with JDK 17 and Gradle 8.9. Tag `v1.6.0` to publish a
 release with the APKs attached.
 
 ## Signing
