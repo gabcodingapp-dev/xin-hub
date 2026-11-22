@@ -82,6 +82,7 @@ fun XinRoot() {
     var heroSlug by rememberSaveable { mutableStateOf<String?>(null) }
     var detail by remember { mutableStateOf<Job?>(null) }
     var slotFor by rememberSaveable { mutableStateOf<String?>(null) }
+    var showWelcome by rememberSaveable { mutableStateOf(!hub.storage.shizukuGranted) }
 
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
         if (uri != null) {
@@ -214,7 +215,111 @@ fun XinRoot() {
         SlotSheet(hub = hub, slug = slug, onClose = { slotFor = null })
     }
 
+    if (showWelcome) {
+        WelcomeAdbOverlay(
+            hub = hub,
+            onContinue = { showWelcome = false },
+        )
+    }
+
     ProgressOverlay(hub = hub)
+}
+
+@Composable
+private fun WelcomeAdbOverlay(hub: HubState, onContinue: () -> Unit) {
+    val granted = hub.storage.shizukuGranted
+    val running = hub.storage.shizukuRunning
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xEE080B10))
+            .clickable(enabled = false) {},
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(24.dp)
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(20.dp))
+                .background(Panel)
+                .padding(22.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                "Hello, welcome to XIN HUB",
+                color = TextHi,
+                fontSize = 19.sp,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "Your MLBB companion app. Before continuing, you need to connect to Wireless ADB via Shizuku.",
+                color = official.nixhub.assistant.ui.theme.TextMid,
+                fontSize = 12.5.sp,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            )
+            Spacer(Modifier.height(18.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(official.nixhub.assistant.ui.theme.PanelHi)
+                    .clickable { hub.requestShizuku() }
+                    .padding(14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(if (granted) Cyan.copy(alpha = 0.18f) else Color(0xFF1E293B)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.AutoAwesome,
+                        contentDescription = "Shizuku",
+                        tint = if (granted) Cyan else TextHi,
+                        modifier = Modifier.size(24.dp),
+                    )
+                }
+                Spacer(Modifier.size(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        "Shizuku (Wireless ADB)",
+                        color = TextHi,
+                        fontSize = 14.sp,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                    )
+                    Text(
+                        when {
+                            granted -> "Connected & permission granted"
+                            running -> "Tap to allow XIN HUB in Shizuku"
+                            else -> "Tap to connect & request Shizuku permission"
+                        },
+                        color = if (granted) Cyan else TextLow,
+                        fontSize = 11.sp,
+                    )
+                }
+            }
+            Spacer(Modifier.height(18.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(if (granted) Cyan else official.nixhub.assistant.ui.theme.PanelHi)
+                    .clickable { onContinue() }
+                    .padding(vertical = 12.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    if (granted) "Continue to XIN HUB" else "Continue anyway",
+                    color = if (granted) official.nixhub.assistant.ui.theme.Void else official.nixhub.assistant.ui.theme.TextMid,
+                    fontSize = 13.sp,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                )
+            }
+        }
+    }
 }
 
 @Composable

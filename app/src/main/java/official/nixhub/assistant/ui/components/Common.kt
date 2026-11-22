@@ -98,16 +98,26 @@ fun SectionHeader(title: String, subtitle: String? = null, action: String? = nul
 }
 
 @Composable
-fun NetImage(url: String?, modifier: Modifier = Modifier, contentScale: ContentScale = ContentScale.Crop) {
+fun NetImage(
+    url: String?,
+    modifier: Modifier = Modifier,
+    contentScale: ContentScale = ContentScale.Crop,
+    targetWidth: Int = 320,
+    targetHeight: Int = 320,
+) {
     if (url.isNullOrBlank()) {
         Box(modifier.background(PanelHi))
         return
     }
-    AsyncImage(
-        model = ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val request = androidx.compose.runtime.remember(url, targetWidth, targetHeight) {
+        ImageRequest.Builder(context)
             .data(url)
-            .size(320, 320)
-            .build(),
+            .size(targetWidth, targetHeight)
+            .build()
+    }
+    AsyncImage(
+        model = request,
         imageLoader = Xin.images,
         contentDescription = null,
         contentScale = contentScale,
