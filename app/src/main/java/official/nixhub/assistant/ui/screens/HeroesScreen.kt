@@ -185,7 +185,7 @@ private fun HeroTile(hero: Hero, onClick: () -> Unit) {
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                "SKIN ${hero.skinCount}",
+                hero.roles.firstOrNull()?.uppercase() ?: "HERO",
                 color = Cyan,
                 fontSize = 8.sp,
                 fontWeight = FontWeight.SemiBold,

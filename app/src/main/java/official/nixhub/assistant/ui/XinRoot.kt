@@ -82,7 +82,7 @@ fun XinRoot() {
     var heroSlug by rememberSaveable { mutableStateOf<String?>(null) }
     var detail by remember { mutableStateOf<Job?>(null) }
     var slotFor by rememberSaveable { mutableStateOf<String?>(null) }
-    var showWelcome by rememberSaveable { mutableStateOf(!hub.storage.shizukuGranted) }
+    var showWelcome by rememberSaveable { mutableStateOf(!hub.shizuku.granted) }
 
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
         if (uri != null) {
@@ -227,8 +227,8 @@ fun XinRoot() {
 
 @Composable
 private fun WelcomeAdbOverlay(hub: HubState, onContinue: () -> Unit) {
-    val granted = hub.storage.shizukuGranted
-    val running = hub.storage.shizukuRunning
+    val granted = hub.shizuku.granted
+    val running = hub.shizuku.running
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -264,7 +264,7 @@ private fun WelcomeAdbOverlay(hub: HubState, onContinue: () -> Unit) {
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
                     .background(official.nixhub.assistant.ui.theme.PanelHi)
-                    .clickable { hub.requestShizuku() }
+                    .clickable { hub.connectShizuku() }
                     .padding(14.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
