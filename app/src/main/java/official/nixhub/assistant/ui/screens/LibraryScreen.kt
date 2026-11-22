@@ -47,6 +47,7 @@ import official.nixhub.assistant.ui.theme.TextHi
 import official.nixhub.assistant.ui.theme.TextLow
 import official.nixhub.assistant.ui.theme.TextMid
 import official.nixhub.assistant.ui.theme.Violet
+import official.nixhub.assistant.ui.theme.XinDisplay
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -81,6 +82,7 @@ fun LibraryScreen(hub: HubState, onBack: () -> Unit) {
                     color = TextHi,
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Black,
+                    fontFamily = XinDisplay,
                     letterSpacing = (-0.4).sp,
                 )
                 Text("${applied.size} applied · backups kept on device", color = TextLow, fontSize = 10.5.sp)

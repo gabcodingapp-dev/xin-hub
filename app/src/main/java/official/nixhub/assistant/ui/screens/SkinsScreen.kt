@@ -104,7 +104,7 @@ fun SkinsScreen(hub: HubState, onApply: (Job) -> Unit) {
                 fontSize = 11.sp,
             )
             Spacer(Modifier.height(12.dp))
-            SearchField(query, "Search hero, skin, tier") { query = it }
+            SkinSearchField(query, "Search hero, skin, tier") { query = it }
         }
 
         Spacer(Modifier.height(10.dp))
@@ -112,13 +112,13 @@ fun SkinsScreen(hub: HubState, onApply: (Job) -> Unit) {
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            item { FilterChip("Ready only", onlyReady, Cyan) { onlyReady = !onlyReady } }
-            item { FilterChip("All", group.isBlank(), Cyan) { group = "" } }
-            item { FilterChip("Upgrade", group == "upgrade", Violet) { group = if (group == "upgrade") "" else "upgrade" } }
-            item { FilterChip("Custom", group == "custom", Violet) { group = if (group == "custom") "" else "custom" } }
-            item { FilterChip("All heroes", hero.isBlank(), Violet) { hero = "" } }
+            item { SkinFilterChip("Ready only", onlyReady, Cyan) { onlyReady = !onlyReady } }
+            item { SkinFilterChip("All", group.isBlank(), Cyan) { group = "" } }
+            item { SkinFilterChip("Upgrade", group == "upgrade", Violet) { group = if (group == "upgrade") "" else "upgrade" } }
+            item { SkinFilterChip("Custom", group == "custom", Violet) { group = if (group == "custom") "" else "custom" } }
+            item { SkinFilterChip("All heroes", hero.isBlank(), Violet) { hero = "" } }
             items(heroes, key = { it }) { name ->
-                FilterChip(name, hero == name, Violet) {
+                SkinFilterChip(name, hero == name, Violet) {
                     hero = if (hero == name) "" else name
                 }
             }
@@ -130,9 +130,9 @@ fun SkinsScreen(hub: HubState, onApply: (Job) -> Unit) {
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                item { FilterChip("Any tag", onlyTag.isBlank(), Cyan) { onlyTag = "" } }
+                item { SkinFilterChip("Any tag", onlyTag.isBlank(), Cyan) { onlyTag = "" } }
                 items(tags, key = { it.id }) { tag ->
-                    FilterChip(tag.name, onlyTag == tag.id, Cyan) {
+                    SkinFilterChip(tag.name, onlyTag == tag.id, Cyan) {
                         onlyTag = if (onlyTag == tag.id) "" else tag.id
                     }
                 }
@@ -242,7 +242,7 @@ fun SkinCard(skin: Skin, onClick: () -> Unit) {
 }
 
 @Composable
-fun SearchField(value: String, hint: String, onChange: (String) -> Unit) {
+fun SkinSearchField(value: String, hint: String, onChange: (String) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -285,7 +285,7 @@ fun SearchField(value: String, hint: String, onChange: (String) -> Unit) {
 }
 
 @Composable
-fun FilterChip(label: String, active: Boolean, accent: Color, onClick: () -> Unit) {
+fun SkinFilterChip(label: String, active: Boolean, accent: Color, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(50))

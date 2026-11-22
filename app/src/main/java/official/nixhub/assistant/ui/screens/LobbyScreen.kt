@@ -56,6 +56,7 @@ import official.nixhub.assistant.ui.theme.TextHi
 import official.nixhub.assistant.ui.theme.TextLow
 import official.nixhub.assistant.ui.theme.TextMid
 import official.nixhub.assistant.ui.theme.Violet
+import official.nixhub.assistant.ui.theme.XinDisplay
 
 @Composable
 fun LobbyScreen(hub: HubState, onApply: (Job) -> Unit) {
@@ -112,6 +113,7 @@ fun LobbyScreen(hub: HubState, onApply: (Job) -> Unit) {
                 color = TextHi,
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Black,
+                fontFamily = XinDisplay,
                 letterSpacing = (-0.6).sp,
             )
             Text("${sounds.size} tracks · tap to preview", color = TextLow, fontSize = 11.sp)

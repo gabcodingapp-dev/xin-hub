@@ -3,66 +3,47 @@ package official.nixhub.assistant.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import official.nixhub.assistant.ui.theme.Cyan
+import coil.request.ImageRequest
+import official.nixhub.assistant.Xin
 import official.nixhub.assistant.ui.theme.Line
 import official.nixhub.assistant.ui.theme.Panel
 import official.nixhub.assistant.ui.theme.PanelHi
 import official.nixhub.assistant.ui.theme.TextHi
 import official.nixhub.assistant.ui.theme.TextLow
 import official.nixhub.assistant.ui.theme.TextMid
-import official.nixhub.assistant.ui.theme.Violet
+import official.nixhub.assistant.ui.theme.Void
+import official.nixhub.assistant.ui.theme.XinBody
 
 @Composable
 fun XinBackdrop(content: @Composable () -> Unit) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    0f to Color(0xFF0B0918),
-                    0.45f to Color(0xFF07060F),
-                    1f to Color(0xFF05040C),
-                )
-            )
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(320.dp)
-                .background(
-                    Brush.radialGradient(
-                        colors = listOf(Color(0x339B5CF6), Color(0x00000000)),
-                        radius = 900f,
-                    )
-                )
-        )
-        content()
-    }
+    Box(modifier = Modifier.background(Void)) { content() }
 }
 
 @Composable
@@ -71,169 +52,153 @@ fun GlassCard(
     onClick: (() -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
-    val shape = RoundedCornerShape(18.dp)
-    Box(
-        modifier = modifier
-            .clip(shape)
-            .background(Brush.verticalGradient(listOf(PanelHi, Panel)))
-            .border(1.dp, Line.copy(alpha = 0.7f), shape)
-            .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier)
-    ) {
-        content()
-    }
+    var card = modifier
+        .clip(RoundedCornerShape(14.dp))
+        .background(Panel)
+        .border(1.dp, Line, RoundedCornerShape(14.dp))
+    if (onClick != null) card = card.clickable { onClick() }
+    Box(card) { content() }
 }
 
 @Composable
-fun Pill(
-    text: String,
-    color: Color = Violet,
-    modifier: Modifier = Modifier,
-    filled: Boolean = false,
-) {
+fun Pill(text: String, color: Color, filled: Boolean = false) {
     Box(
-        modifier = modifier
+        modifier = Modifier
             .clip(RoundedCornerShape(50))
-            .background(if (filled) color.copy(alpha = 0.18f) else Color.Transparent)
-            .border(1.dp, color.copy(alpha = 0.55f), RoundedCornerShape(50))
-            .padding(horizontal = 8.dp, vertical = 3.dp)
+            .background(if (filled) color else color.copy(alpha = 0.12f))
+            .padding(horizontal = 8.dp, vertical = 3.dp),
     ) {
         Text(
-            text = text.uppercase(),
-            color = if (filled) color else color.copy(alpha = 0.9f),
+            text,
+            color = if (filled) Void else color,
             fontSize = 9.sp,
             fontWeight = FontWeight.Bold,
-            letterSpacing = 0.7.sp,
             maxLines = 1,
         )
     }
 }
 
 @Composable
-fun SectionHeader(
-    title: String,
-    subtitle: String? = null,
-    action: String? = null,
-    onAction: (() -> Unit)? = null,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 18.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
+fun SectionHeader(title: String, subtitle: String? = null, action: String? = null, onAction: () -> Unit = {}) {
+    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(
-                title,
-                color = TextHi,
-                fontSize = 17.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = (-0.2).sp,
-            )
-            if (subtitle != null) {
-                Text(
-                    subtitle,
-                    color = TextLow,
-                    fontSize = 11.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
+            Text(title, color = TextHi, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+            if (subtitle != null) Text(subtitle, color = TextLow, fontSize = 10.5.sp)
         }
-        if (action != null && onAction != null) {
+        if (action != null) {
             Text(
                 action,
-                color = Cyan,
-                fontSize = 12.sp,
+                color = Color(0xFF3DDC97),
+                fontSize = 11.sp,
                 fontWeight = FontWeight.SemiBold,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(50))
-                    .clickable { onAction() }
-                    .padding(horizontal = 10.dp, vertical = 6.dp),
+                modifier = Modifier.clickable { onAction() },
             )
         }
     }
 }
 
 @Composable
-fun NetImage(
-    url: String?,
-    modifier: Modifier = Modifier,
-    contentScale: ContentScale = ContentScale.Crop,
-) {
-    Box(
-        modifier = modifier.background(
-            Brush.linearGradient(listOf(PanelHi, Color(0xFF1B1733)))
-        ),
-        contentAlignment = Alignment.Center,
-    ) {
-        if (!url.isNullOrBlank()) {
-            AsyncImage(
-                model = url,
-                contentDescription = null,
-                contentScale = contentScale,
-                modifier = Modifier.fillMaxSize(),
-            )
-        } else {
-            Text(
-                "XIN",
-                color = TextLow.copy(alpha = 0.35f),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Black,
-            )
-        }
+fun NetImage(url: String?, modifier: Modifier = Modifier, contentScale: ContentScale = ContentScale.Crop) {
+    if (url.isNullOrBlank()) {
+        Box(modifier.background(PanelHi))
+        return
     }
+    AsyncImage(
+        model = ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
+            .data(url)
+            .size(320, 320)
+            .build(),
+        imageLoader = Xin.images,
+        contentDescription = null,
+        contentScale = contentScale,
+        modifier = modifier,
+    )
 }
 
 @Composable
 fun StatChip(label: String, value: String, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
-            .clip(RoundedCornerShape(14.dp))
-            .background(Color(0x66120F22))
-            .border(1.dp, Line.copy(alpha = 0.6f), RoundedCornerShape(14.dp))
-            .padding(horizontal = 12.dp, vertical = 10.dp),
-        horizontalAlignment = Alignment.Start,
+            .clip(RoundedCornerShape(12.dp))
+            .background(Panel)
+            .border(1.dp, Line, RoundedCornerShape(12.dp))
+            .padding(horizontal = 10.dp, vertical = 9.dp),
     ) {
-        Text(value, color = TextHi, fontSize = 18.sp, fontWeight = FontWeight.Black)
-        Text(label.uppercase(), color = TextLow, fontSize = 9.sp, letterSpacing = 0.8.sp)
+        Text(value, color = TextHi, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        Text(label, color = TextLow, fontSize = 9.5.sp)
     }
 }
 
 @Composable
 fun EmptyState(title: String, body: String) {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 48.dp),
+        modifier = Modifier.fillMaxWidth().padding(36.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Box(
-            modifier = Modifier
-                .size(44.dp)
-                .clip(RoundedCornerShape(14.dp))
-                .background(Violet.copy(alpha = 0.12f)),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text("✕", color = Violet, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-        }
-        Spacer(Modifier.height(4.dp))
-        Text(title, color = TextHi, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
-        Text(body, color = TextMid, fontSize = 12.sp, lineHeight = 17.sp)
+        Text(title, color = TextHi, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+        Spacer(Modifier.height(5.dp))
+        Text(body, color = TextLow, fontSize = 11.sp)
     }
 }
 
 @Composable
 fun DividerLine(modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(1.dp)
-            .background(Line.copy(alpha = 0.5f))
-    )
+    Box(modifier.fillMaxWidth().height(1.dp).background(Line))
 }
 
 @Composable
-fun RowSpacer(width: Int) {
-    Spacer(Modifier.width(width.dp))
+fun RowSpacer(width: Int) = Spacer(Modifier.width(width.dp))
+
+@Composable
+fun SearchField(value: String, hint: String, onChange: (String) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .background(Panel)
+            .border(1.dp, Line, RoundedCornerShape(10.dp))
+            .padding(horizontal = 11.dp, vertical = 9.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(Icons.Rounded.Search, contentDescription = null, tint = TextLow, modifier = Modifier.size(16.dp))
+        Spacer(Modifier.width(8.dp))
+        Box(modifier = Modifier.weight(1f)) {
+            if (value.isEmpty()) Text(hint, color = TextLow, fontSize = 12.sp)
+            BasicTextField(
+                value = value,
+                onValueChange = onChange,
+                singleLine = true,
+                textStyle = TextStyle(color = TextHi, fontSize = 12.sp, fontFamily = XinBody),
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+        if (value.isNotEmpty()) {
+            Icon(
+                Icons.Rounded.Close,
+                contentDescription = null,
+                tint = TextLow,
+                modifier = Modifier.size(15.dp).clickable { onChange("") },
+            )
+        }
+    }
+}
+
+@Composable
+fun FilterChip(label: String, active: Boolean, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(50))
+            .background(if (active) Color(0xFF3DDC97) else Panel)
+            .border(1.dp, if (active) Color(0xFF3DDC97) else Line, RoundedCornerShape(50))
+            .clickable { onClick() }
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+    ) {
+        Text(
+            label,
+            color = if (active) Void else TextMid,
+            fontSize = 10.5.sp,
+            fontWeight = if (active) FontWeight.Bold else FontWeight.Normal,
+            maxLines = 1,
+        )
+    }
 }

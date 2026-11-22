@@ -2,25 +2,25 @@ package official.nixhub.assistant.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Void = Color(0xFF07060F)
-val Deep = Color(0xFF0C0A18)
-val Panel = Color(0xFF121022)
-val PanelHi = Color(0xFF191630)
-val Line = Color(0xFF2A2444)
+val Void = Color(0xFF090A0E)
+val Deep = Color(0xFF0E1015)
+val Panel = Color(0xFF14161C)
+val PanelHi = Color(0xFF1B1E26)
+val Line = Color(0xFF262A33)
 
 val Violet = Color(0xFF8B5CF6)
 val VioletDeep = Color(0xFF5B21B6)
-val Cyan = Color(0xFF22D3EE)
-val CyanDeep = Color(0xFF0E7490)
+val Cyan = Color(0xFF3DDC97)
+val CyanDeep = Color(0xFF187A56)
 val Rose = Color(0xFFF472B6)
 val Amber = Color(0xFFFBBF24)
-val Lime = Color(0xFFA3E635)
+val Lime = Color(0xFFB6F36A)
 
-val TextHi = Color(0xFFF3F1FF)
-val TextMid = Color(0xFFB9B3D4)
-val TextLow = Color(0xFF7C769B)
-val Danger = Color(0xFFFF5C7A)
-val Good = Color(0xFF34D399)
+val TextHi = Color(0xFFF5F6F8)
+val TextMid = Color(0xFFA9AEBB)
+val TextLow = Color(0xFF6F7582)
+val Danger = Color(0xFFFF6B7A)
+val Good = Color(0xFF3DDC97)
 
 fun tierColor(tier: String?): Color = when (tier?.lowercase()) {
     "default" -> TextMid
@@ -32,5 +32,5 @@ fun tierColor(tier: String?): Color = when (tier?.lowercase()) {
     "mythic", "collector" -> Color(0xFFEF4444)
     "fanmade", "custom" -> Cyan
     "painted" -> Lime
-    else -> Violet
+    else -> TextLow
 }
