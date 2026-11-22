@@ -41,6 +41,7 @@ fun EffectItem.toJob(category: EffectCategory): Job? {
         subtitle = category.title,
         script = link,
         image = image,
+        intro = category.kind == "intro" || category.kind == "gb",
     )
 }
 

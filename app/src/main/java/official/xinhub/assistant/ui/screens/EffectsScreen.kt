@@ -127,6 +127,7 @@ fun EffectsScreen(hub: HubState, onApply: (Job) -> Unit, kind: String? = null) {
                             subtitle = "GB loading screen · stock",
                             script = Config.GB_RESTORE_SCRIPT,
                             image = Config.GB_RESTORE_IMAGE,
+                            intro = true,
                         )
                     )
                 },

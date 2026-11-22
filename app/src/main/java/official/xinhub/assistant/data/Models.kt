@@ -155,6 +155,7 @@ data class Job(
     val upgradeMode: Boolean = false,
     val secondForm: Boolean = false,
     val protectionRequired: Boolean = false,
+    val intro: Boolean = false,
 ) {
     enum class Kind { SKIN, EFFECT, LOBBY }
 }

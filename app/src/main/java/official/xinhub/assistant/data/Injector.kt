@@ -3,6 +3,7 @@ package official.xinhub.assistant.data
 import android.content.Context
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import java.io.File
 import java.util.zip.ZipInputStream
 
@@ -117,29 +118,8 @@ class Injector(private val ctx: Context, private val prefs: Prefs) {
         onProgress(Progress(running = true, phase = "preparing", label = "reading archive"))
         val backupDir = File(backupRoot, job.id).apply { mkdirs() }
 
-        var written = 0
-        var total = 0
-        try {
-            ZipInputStream(zip.inputStream().buffered()).use { zin ->
-                while (true) {
-                    val entry = zin.nextEntry ?: break
-                    if (!entry.isDirectory) total++
-                    zin.closeEntry()
-                }
-            }
-        } catch (t: Throwable) {
-            return@withContext Progress(
-                error = "archive is not readable", finished = true, phase = "error"
-            )
-        }
-        onProgress(
-            Progress(
-                running = true, done = 0, total = total,
-                phase = "injecting", label = "writing files",
-            )
-        )
-
-        var failures = 0
+        val names = ArrayList<String>()
+        var route: JSONObject? = null
         try {
             ZipInputStream(zip.inputStream().buffered()).use { zin ->
                 while (true) {
@@ -148,8 +128,83 @@ class Injector(private val ctx: Context, private val prefs: Prefs) {
                         zin.closeEntry()
                         continue
                     }
-                    val rel = normalize(entry.name)
-                    if (rel == null) {
+                    names.add(entry.name)
+                    val base = entry.name.substringAfterLast('/')
+                    if (base == "advanced_route.nxr" || base == ".nix-skill-atlas-patches.json") {
+                        val payload = zin.readLimited(MAX_ENTRY)
+                        if (payload != null) {
+                            route = runCatching {
+                                JSONObject(String(payload, Charsets.UTF_8))
+                            }.getOrNull()
+                        }
+                    }
+                    zin.closeEntry()
+                }
+            }
+        } catch (t: Throwable) {
+            return@withContext Progress(
+                error = "archive is not readable", finished = true, phase = "error"
+            )
+        }
+
+        val wrapper = wrapperFor(names)
+        val rels = names.mapNotNull { normalize(it, wrapper) }
+        val normalizedSet = rels.toHashSet()
+        val aliases = atlasAliases(route).filterKeys { it in normalizedSet }
+        val replacements = routeReplacements(route).filterKeys { it in normalizedSet }
+        val extras = (aliases.values + replacements.values)
+            .distinct()
+            .filter { it !in normalizedSet }
+        val total = rels.size + extras.size
+        onProgress(
+            Progress(
+                running = true, done = 0, total = total,
+                phase = "injecting", label = "writing files",
+            )
+        )
+
+        val writtenTargets = HashSet<String>()
+        var failures = 0
+
+        fun writeRel(rel: String, bytes: ByteArray): Boolean {
+            val backupFile = File(backupDir, rel)
+            if (!backupFile.exists() && storage.exists(rel)) {
+                val original = storage.read(rel)
+                if (original != null && original.size <= MAX_ENTRY) {
+                    backupFile.parentFile?.mkdirs()
+                    backupFile.writeBytes(original)
+                }
+            }
+            val wrote = storage.write(rel, bytes)
+            val observed = storage.size(rel)
+            val sizeOk = observed == null || observed < 0L ||
+                observed == bytes.size.toLong() ||
+                (observed == 0L && bytes.isNotEmpty())
+            val ok = wrote && sizeOk
+            if (ok) {
+                writtenTargets.add(rel)
+            } else {
+                failures++
+            }
+            onProgress(
+                Progress(
+                    running = true, done = writtenTargets.size, total = total,
+                    phase = "injecting", label = rel.substringAfterLast('/'),
+                )
+            )
+            return ok
+        }
+
+        try {
+            ZipInputStream(zip.inputStream().buffered()).use { zin ->
+                while (true) {
+                    val entry = zin.nextEntry ?: break
+                    if (entry.isDirectory) {
+                        zin.closeEntry()
+                        continue
+                    }
+                    val sourceRel = normalize(entry.name, wrapper)
+                    if (sourceRel == null) {
                         zin.closeEntry()
                         continue
                     }
@@ -160,25 +215,10 @@ class Injector(private val ctx: Context, private val prefs: Prefs) {
                         continue
                     }
 
-                    val backupFile = File(backupDir, rel)
-                    if (!backupFile.exists() && storage.exists(rel)) {
-                        val original = storage.read(rel)
-                        if (original != null && original.size <= MAX_ENTRY) {
-                            backupFile.parentFile?.mkdirs()
-                            backupFile.writeBytes(original)
-                        }
-                    }
-                    if (storage.write(rel, bytes)) {
-                        written++
-                    } else {
-                        failures++
-                    }
-                    onProgress(
-                        Progress(
-                            running = true, done = written, total = total,
-                            phase = "injecting", label = rel.substringAfterLast('/'),
-                        )
-                    )
+                    val rel = mapRel(job, sourceRel)
+                    writeRel(rel, bytes)
+                    aliases[sourceRel]?.let { target -> writeRel(mapRel(job, target), bytes) }
+                    replacements[sourceRel]?.let { target -> writeRel(target, bytes) }
                 }
             }
         } catch (t: Throwable) {
@@ -187,6 +227,7 @@ class Injector(private val ctx: Context, private val prefs: Prefs) {
             )
         }
 
+        val written = writtenTargets.size
         if (written == 0) {
             return@withContext Progress(
                 error = "nothing written — check the folder permission",
@@ -314,7 +355,8 @@ class Injector(private val ctx: Context, private val prefs: Prefs) {
             }
         }
 
-    fun backupSize(jobId: String): Long {        val dir = File(backupRoot, jobId)
+    fun backupSize(jobId: String): Long {
+        val dir = File(backupRoot, jobId)
         if (!dir.exists()) return 0
         return dir.walkTopDown().filter { it.isFile }.sumOf { it.length() }
     }
@@ -337,25 +379,97 @@ class Injector(private val ctx: Context, private val prefs: Prefs) {
     companion object {
         private const val MAX_ENTRY = 96 * 1024 * 1024
 
-        fun normalize(raw: String): String? {
+        private val KNOWN_ROOTS = setOf(
+            "art", "audio", "ui", "document", "astcinpack", "nix-advanced",
+            "effects", "custom", "heroes", "splash", "background", "profile",
+        )
+
+        private fun stripKnown(path: String): String = when {
+            path.startsWith("com.mobile.legends/files/dragon2017/assets/", true) ->
+                path.substring("com.mobile.legends/files/dragon2017/assets/".length)
+            path.startsWith("files/dragon2017/assets/", true) ->
+                path.substring("files/dragon2017/assets/".length)
+            path.startsWith("dragon2017/assets/", true) ->
+                path.substring("dragon2017/assets/".length)
+            path.startsWith("assets/", true) -> path.substring("assets/".length)
+            else -> path
+        }
+
+        /** A single wrapping folder around every entry is a zip quirk, not a game path. */
+        fun wrapperFor(names: List<String>): String? {
+            val firsts = HashSet<String>()
+            for (raw in names) {
+                val path = stripKnown(raw.replace('\\', '/').trim().trimStart('/'))
+                if (path.isBlank() || path.endsWith("/")) continue
+                val slash = path.indexOf('/')
+                if (slash <= 0) return null
+                val first = path.substring(0, slash)
+                if (first.contains('.')) return null
+                firsts.add(first.lowercase())
+            }
+            if (firsts.size != 1) return null
+            val only = firsts.first()
+            if (only in KNOWN_ROOTS) return null
+            return names.firstNotNullOfOrNull { raw ->
+                val path = stripKnown(raw.replace('\\', '/').trim().trimStart('/'))
+                val slash = path.indexOf('/')
+                if (slash > 0 && path.substring(0, slash).lowercase() == only)
+                    path.substring(0, slash + 1)
+                else null
+            }
+        }
+
+        fun normalize(raw: String, wrapper: String? = null): String? {
             var path = raw.replace('\\', '/').trim()
             path = path.trimStart('/')
             if (path.isBlank()) return null
             if (path.contains("__MACOSX")) return null
             if (path.endsWith("/")) return null
-            path = when {
-                path.startsWith("com.mobile.legends/files/dragon2017/assets/") ->
-                    path.removePrefix("com.mobile.legends/files/dragon2017/assets/")
-                path.startsWith("dragon2017/assets/") -> path.removePrefix("dragon2017/assets/")
-                path.startsWith("assets/") -> path.removePrefix("assets/")
-                path.startsWith("files/dragon2017/assets/") -> path.removePrefix("files/dragon2017/assets/")
-                else -> path
+            path = stripKnown(path)
+            if (wrapper != null && path.startsWith(wrapper, true)) {
+                path = path.substring(wrapper.length)
             }
             if (path.isBlank()) return null
             val parts = path.split('/')
             if (parts.any { it == ".." || it == "." }) return null
             if (path.length > 240) return null
             return path
+        }
+
+        /** Intro archives ship a bare Splash.mp4; MLBB reads it from Audio/Android. */
+        private fun mapRel(job: Job, rel: String): String {
+            if (!job.intro) return rel
+            val name = rel.substringAfterLast('/')
+            return if (name.equals("Splash.mp4", true)) "Audio/Android/Splash.mp4" else rel
+        }
+
+        private fun atlasAliases(route: JSONObject?): Map<String, String> {
+            if (route == null) return emptyMap()
+            val arr = route.optJSONObject("skill_atlas")?.optJSONArray("atlases")
+                ?: route.optJSONArray("atlases")
+                ?: return emptyMap()
+            val out = HashMap<String, String>()
+            for (i in 0 until arr.length()) {
+                val o = arr.optJSONObject(i) ?: continue
+                val alias = o.optString("alias_file").takeIf { it.isNotBlank() } ?: continue
+                val target = o.optString("file").takeIf { it.isNotBlank() } ?: continue
+                out[normalize(alias) ?: alias] = normalize(target) ?: target
+            }
+            return out
+        }
+
+        private fun routeReplacements(route: JSONObject?): Map<String, String> {
+            if (route == null) return emptyMap()
+            val arr = route.optJSONArray("replacements") ?: return emptyMap()
+            val out = HashMap<String, String>()
+            for (i in 0 until arr.length()) {
+                val o = arr.optJSONObject(i) ?: continue
+                val payload = o.optString("payload_ref").takeIf { it.isNotBlank() } ?: continue
+                val entry = o.optString("entry").takeIf { it.isNotBlank() } ?: continue
+                out[normalize(payload) ?: payload] =
+                    normalize("Document/android/$entry") ?: "Document/android/$entry"
+            }
+            return out
         }
     }
 }

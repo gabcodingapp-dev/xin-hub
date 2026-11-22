@@ -26,10 +26,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import official.xinhub.assistant.Xin
+import official.xinhub.assistant.data.GameControl
 import official.xinhub.assistant.data.Job
 import official.xinhub.assistant.ui.components.NetImage
 import official.xinhub.assistant.ui.components.Pill
@@ -49,6 +51,7 @@ fun JobSheet(hub: HubState, job: Job, onClose: () -> Unit) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val applied = Xin.prefs.isApplied(job.id)
     val backups = Xin.injector.backupCount(job.id)
+    val ctx = LocalContext.current
 
     ModalBottomSheet(
         onDismissRequest = onClose,
@@ -157,6 +160,19 @@ fun JobSheet(hub: HubState, job: Job, onClose: () -> Unit) {
                     color = if (backups > 0) TextHi else Danger,
                     fontWeight = FontWeight.SemiBold,
                 )
+            }
+
+            Spacer(Modifier.height(8.dp))
+            OutlinedButton(
+                onClick = {
+                    GameControl.launch(ctx)
+                    onClose()
+                },
+                enabled = !hub.progress.running,
+                modifier = Modifier.fillMaxWidth().height(44.dp),
+                shape = RoundedCornerShape(14.dp),
+            ) {
+                Text("Open MLBB", color = Cyan, fontWeight = FontWeight.SemiBold)
             }
         }
     }

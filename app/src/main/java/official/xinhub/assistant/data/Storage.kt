@@ -17,6 +17,10 @@ interface Storage {
     fun read(rel: String): ByteArray?
     fun write(rel: String, bytes: ByteArray): Boolean
     fun walk(): List<String>
+    fun size(rel: String): Long? = read(rel)?.size?.toLong()
+
+    /** Shell access for game lifecycle control. Null for document-tree storage. */
+    fun shell(cmd: String, input: ByteArray? = null): Pair<Int, ByteArray>? = null
 }
 
 private fun safeRel(rel: String): String = rel.trim('/')
@@ -82,6 +86,8 @@ class SafStorage(
         false
     }
 
+    override fun size(rel: String): Long? = locate(rel)?.takeIf { it.isFile }?.length()
+
     override fun walk(): List<String> {
         val out = ArrayList<String>()
         fun rec(node: DocumentFile, prefix: String, depth: Int) {
@@ -108,8 +114,10 @@ class SafStorage(
     }
 }
 
-class RootStorage(private val base: String) : Storage {    override val label: String get() = "root · $base"
+class RootStorage(private val base: String) : Storage {
+    override val label: String get() = "root · $base"
     override val writable: Boolean get() = true
+    override fun shell(cmd: String, input: ByteArray?): Pair<Int, ByteArray> = sh(cmd, input)
 
     private fun sh(cmd: String, input: ByteArray? = null): Pair<Int, ByteArray> {
         val p = ProcessBuilder("su", "-c", cmd).redirectErrorStream(false).start()
@@ -144,6 +152,12 @@ class RootStorage(private val base: String) : Storage {    override val label: S
         return code == 0
     }
 
+    override fun size(rel: String): Long? {
+        val (code, out) = sh("wc -c < ${q(full(rel))} 2>/dev/null")
+        if (code != 0) return null
+        return out.toString(Charsets.UTF_8).trim().toLongOrNull()
+    }
+
     override fun walk(): List<String> {
         val (code, out) = sh("find ${q(base)} -type f 2>/dev/null")
         if (code != 0) return emptyList()
@@ -174,6 +188,7 @@ class RootStorage(private val base: String) : Storage {    override val label: S
 class ShizukuStorage(private val base: String) : Storage {
     override val label: String get() = "shizuku · $base"
     override val writable: Boolean get() = ShizukuAccess.granted()
+    override fun shell(cmd: String, input: ByteArray?): Pair<Int, ByteArray> = sh(cmd, input)
 
     private fun sh(cmd: String, input: ByteArray? = null): Pair<Int, ByteArray> {
         val process = ShizukuAccess.newProcess(arrayOf("sh", "-c", cmd))
@@ -209,6 +224,12 @@ class ShizukuStorage(private val base: String) : Storage {
         val parent = target.substringBeforeLast('/')
         val (code, _) = sh("mkdir -p ${q(parent)} && cat > ${q(target)}", bytes)
         return code == 0
+    }
+
+    override fun size(rel: String): Long? {
+        val (code, out) = sh("wc -c < ${q(full(rel))} 2>/dev/null")
+        if (code != 0) return null
+        return out.toString(Charsets.UTF_8).trim().toLongOrNull()
     }
 
     override fun walk(): List<String> {

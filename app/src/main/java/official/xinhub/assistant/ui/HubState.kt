@@ -11,6 +11,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import official.xinhub.assistant.Xin
 import official.xinhub.assistant.data.Catalog
+import official.xinhub.assistant.data.GameControl
 import official.xinhub.assistant.data.Injector
 import official.xinhub.assistant.data.Job
 import official.xinhub.assistant.data.LoadState
@@ -153,9 +154,14 @@ class HubState(private val ctx: Context) {
                 progress = Injector.Progress(error = "that file is not a readable zip", finished = true)
                 return@launch
             }
+            val stopped = GameControl.stop(target, ctx)
             val result = Xin.injector.apply(target, job) { progress = it }
+            val relaunched = result.error == null && GameControl.launch(ctx)
             progress = result
-            message = result.error ?: "${job.title} applied · ${result.done} files"
+            message = result.error ?: run {
+                val tail = if (stopped && relaunched) "MLBB reopened" else "restart MLBB to see it"
+                "${job.title} applied · ${result.done} files · $tail"
+            }
         }
     }
 
@@ -203,16 +209,23 @@ class HubState(private val ctx: Context) {
             return
         }
         if (progress.running) return
-        progress = Injector.Progress(running = true, phase = "downloading", label = "downloading")
+        progress = Injector.Progress(running = true, phase = "closing game", label = "closing MLBB")
         scope.launch {
             val mirrored = Xin.catalog.mirrorUrl(job.id)
             val source = if (mirrored != null) job.copy(script = mirrored) else job
+            val stopped = GameControl.stop(target, ctx)
             val result = Xin.injector.apply(target, source) { progress = it }
+            val relaunched = result.error == null && GameControl.launch(ctx)
             progress = result
             if (result.error != null) {
                 message = "Failed · ${result.error}"
             } else {
-                message = "Success · ${job.title} applied · ${result.done} files"
+                val tail = when {
+                    stopped && relaunched -> "MLBB reopened"
+                    stopped -> "open MLBB to see it"
+                    else -> "force-close MLBB, then reopen"
+                }
+                message = "Success · ${job.title} applied · ${result.done} files · $tail"
             }
         }
     }
@@ -224,11 +237,16 @@ class HubState(private val ctx: Context) {
             return
         }
         if (progress.running) return
-        progress = Injector.Progress(running = true, phase = "restoring", label = "restoring")
+        progress = Injector.Progress(running = true, phase = "closing game", label = "closing MLBB")
         scope.launch {
+            val stopped = GameControl.stop(target, ctx)
             val result = Xin.injector.restore(target, jobId) { progress = it }
+            val relaunched = result.error == null && GameControl.launch(ctx)
             progress = result
-            message = result.error?.let { "Failed · $it" } ?: "Success · Restored original files"
+            message = result.error?.let { "Failed · $it" } ?: run {
+                val tail = if (stopped && relaunched) "MLBB reopened" else "restart MLBB to see it"
+                "Success · Restored original files · $tail"
+            }
         }
     }
 
@@ -239,11 +257,16 @@ class HubState(private val ctx: Context) {
             return
         }
         if (progress.running) return
-        progress = Injector.Progress(running = true, phase = "restoring", label = "restoring everything")
+        progress = Injector.Progress(running = true, phase = "closing game", label = "closing MLBB")
         scope.launch {
+            val stopped = GameControl.stop(target, ctx)
             val result = Xin.injector.restoreAll(target) { progress = it }
+            val relaunched = result.error == null && GameControl.launch(ctx)
             progress = result
-            message = result.error?.let { "Failed · $it" } ?: "Success · Every backup restored"
+            message = result.error?.let { "Failed · $it" } ?: run {
+                val tail = if (stopped && relaunched) "MLBB reopened" else "restart MLBB to see it"
+                "Success · Every backup restored · $tail"
+            }
         }
     }
 
