@@ -7,7 +7,7 @@ XIN HUB is an Android skin, effect and lobby injector for Mobile Legends. It shi
 - **Skins** — 1,550 looks, 874 injectable, role chips, hero archive and a landscape skin pager.
 - **Effects** — recalls, emotes, trails, eliminations, borders and vehicle effects.
 - **GB Loading Screen** — 487 intros with live video previews and a stock-intro restore kit.
-- **Upgrade Skins** — 151 looks, 9 free Second Forms, slot picker and protection guard. No keys.
+- **Upgrade Skins** — 215 looks, 9 free Second Forms, slot picker and protection guard. No keys.
 - **Lobby sounds** — 9 tracks with preview and one-tap apply.
 - **Library** — every applied item backed up, with per-item restore and restore-all.
 - **Permissions** — Shizuku first, SAF and root as fallbacks.

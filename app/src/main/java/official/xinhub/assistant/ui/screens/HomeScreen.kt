@@ -71,7 +71,7 @@ private val QUICK = listOf(
     Quick("skins", "Skin Changer", "874 ready · 1550 total", Icons.Rounded.Style, Violet),
     Quick("effects", "Effects", "Recalls · emotes", Icons.Rounded.AutoAwesome, Cyan),
     Quick("gb", "GB Loading Screen", "487 screens", Icons.Rounded.Movie, Color(0xFFF472B6)),
-    Quick("upgrade", "Upgrade Skins", "9 Second Forms", Icons.Rounded.TrendingUp, Color(0xFFFBBF24)),
+    Quick("upgrade", "Upgrade Skins", "215 looks · 9 forms", Icons.Rounded.TrendingUp, Color(0xFFFBBF24)),
     Quick("lobby", "Lobby Sounds", "9 tracks", Icons.Rounded.MusicNote, Color(0xFFFBBF24)),
     Quick("library", "My Library", "Backups", Icons.Rounded.Inventory2, Color(0xFF34D399)),
     Quick("guides", "Guides", "Setup help", Icons.Rounded.LibraryBooks, Color(0xFF60A5FA)),

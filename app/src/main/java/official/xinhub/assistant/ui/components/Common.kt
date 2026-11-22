@@ -50,13 +50,13 @@ import official.xinhub.assistant.ui.theme.Void
 import official.xinhub.assistant.ui.theme.XinBody
 
 @Composable
-fun Modifier.pressable(onClick: () -> Unit): Modifier {
+fun Modifier.pressable(onClick: () -> Unit, enabled: Boolean = true): Modifier {
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
-    val scale by animateFloatAsState(if (pressed) 0.965f else 1f, tween(90))
+    val scale by animateFloatAsState(if (pressed && enabled) 0.965f else 1f, tween(90))
     return this
         .graphicsLayer { scaleX = scale; scaleY = scale }
-        .clickable(interactionSource = interaction, indication = null, onClick = onClick)
+        .clickable(enabled = enabled, interactionSource = interaction, indication = null, onClick = onClick)
 }
 
 @Composable
@@ -134,6 +134,7 @@ fun NetImage(
             .size(targetWidth, targetHeight)
             .precision(coil.size.Precision.EXACT)
             .bitmapConfig(android.graphics.Bitmap.Config.RGB_565)
+            .crossfade(false)
             .placeholder(R.drawable.catalog_placeholder)
             .error(R.drawable.catalog_placeholder)
             .fallback(R.drawable.catalog_placeholder)
