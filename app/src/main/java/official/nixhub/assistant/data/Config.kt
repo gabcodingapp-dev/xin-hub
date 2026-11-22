@@ -10,5 +10,9 @@ object Config {
     const val ASSETS_URL = "https://github.com/$OWNER/$ASSETS_REPO"
     const val DEV = "Gab"
     const val PACKAGE = "official.nixhub.assistant"
-    const val VERSION = "1.0.0"
+    const val VERSION = "1.1.0"
+
+    /** Restoration-protection pair shipped with the original NIX HUB. */
+    const val PROTECT_ON = ASSETS_BASE + "restore/enable_protection.zip"
+    const val PROTECT_OFF = ASSETS_BASE + "restore/restore_normal.zip"
 }

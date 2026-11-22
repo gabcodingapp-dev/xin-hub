@@ -245,6 +245,32 @@ fun SettingsScreen(
                         val freed = Xin.injector.clearCache()
                         hub.say(if (freed > 0) "Cleared $freed cached archives" else "Cache already empty")
                     }
+                    Spacer(Modifier.height(8.dp))
+                    ActionRow("Enable restoration protection", "Blocks the client from wiping injected files", Icons.Rounded.Security) {
+                        hub.apply(
+                            official.nixhub.assistant.data.Job(
+                                id = "restore-protection-on",
+                                kind = official.nixhub.assistant.data.Job.Kind.EFFECT,
+                                title = "Restoration protection",
+                                subtitle = "protection",
+                                script = Config.PROTECT_ON,
+                                image = null,
+                            )
+                        )
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    ActionRow("Disable restoration protection", "Put the stock behaviour back", Icons.Rounded.Restore) {
+                        hub.apply(
+                            official.nixhub.assistant.data.Job(
+                                id = "restore-protection-off",
+                                kind = official.nixhub.assistant.data.Job.Kind.EFFECT,
+                                title = "Stock restore",
+                                subtitle = "protection",
+                                script = Config.PROTECT_OFF,
+                                image = null,
+                            )
+                        )
+                    }
                 }
             }
         }

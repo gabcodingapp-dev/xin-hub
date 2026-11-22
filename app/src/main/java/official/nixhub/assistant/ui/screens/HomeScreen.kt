@@ -67,14 +67,14 @@ import official.nixhub.assistant.ui.theme.tierColor
 private data class Quick(val route: String, val title: String, val sub: String, val icon: ImageVector, val tint: Color)
 
 private val QUICK = listOf(
-    Quick("skins", "Skin Changer", "743 injectable", Icons.Rounded.Style, Violet),
+    Quick("skins", "Skin Changer", "874 ready · 1550 total", Icons.Rounded.Style, Violet),
     Quick("effects", "Effects", "Recalls · emotes", Icons.Rounded.AutoAwesome, Cyan),
     Quick("intros", "Loading Intros", "487 screens", Icons.Rounded.Movie, Color(0xFFF472B6)),
     Quick("lobby", "Lobby Sounds", "9 tracks", Icons.Rounded.MusicNote, Color(0xFFFBBF24)),
     Quick("library", "My Library", "Backups", Icons.Rounded.Inventory2, Color(0xFF34D399)),
     Quick("guides", "Guides", "Setup help", Icons.Rounded.LibraryBooks, Color(0xFF60A5FA)),
     Quick("restore", "Restore All", "Stock files", Icons.Rounded.Restore, Color(0xFFFF5C7A)),
-    Quick("settings", "Setup", "Storage · root", Icons.Rounded.FolderOpen, Color(0xFFA78BFA)),
+    Quick("settings", "Setup", "SAF · Shizuku · root", Icons.Rounded.FolderOpen, Color(0xFFA78BFA)),
 )
 
 @Composable
