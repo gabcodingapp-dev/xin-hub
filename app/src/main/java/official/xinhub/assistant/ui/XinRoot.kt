@@ -41,6 +41,9 @@ import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material.icons.rounded.Send
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -70,6 +73,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import official.xinhub.assistant.data.Config
+import official.xinhub.assistant.data.GameControl
 import official.xinhub.assistant.data.Job
 import official.xinhub.assistant.data.Skin
 import official.xinhub.assistant.ui.components.Pill
@@ -164,55 +168,57 @@ fun XinRoot() {
             Box(modifier = Modifier.navigationBarsPadding()) { SnackbarHost(snackbar) }
         },
         bottomBar = {
-            Row(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Line.copy(alpha = 0.82f))
                     .navigationBarsPadding()
-                    .padding(horizontal = 8.dp, vertical = 7.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                    .padding(horizontal = 14.dp, vertical = 8.dp),
             ) {
-                for (tab in TABS) {
-                    val active = route == tab.route && heroSlug == null
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(13.dp))
-                            .background(if (active) Cyan.copy(alpha = 0.12f) else Color.Transparent)
-                            .border(
-                                1.dp,
-                                if (active) Cyan.copy(alpha = 0.42f) else Color.Transparent,
-                                RoundedCornerShape(13.dp),
-                            )
-                            .pressable {
-                                heroSlug = null
-                                upgradeFor = null
-                                route = tab.route
-                            }
-                            .padding(vertical = 7.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Box(
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(22.dp))
+                        .background(Panel.copy(alpha = 0.94f))
+                        .border(1.dp, Line, RoundedCornerShape(22.dp))
+                        .padding(6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    for (tab in TABS) {
+                        val active = route == tab.route && heroSlug == null
+                        Column(
                             modifier = Modifier
-                                .size(width = 16.dp, height = 2.dp)
-                                .clip(RoundedCornerShape(50))
-                                .background(if (active) Cyan else Color.Transparent),
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Icon(
-                            tab.icon,
-                            contentDescription = tab.label,
-                            tint = if (active) Cyan else TextLow,
-                            modifier = Modifier.size(17.dp),
-                        )
-                        Spacer(Modifier.height(3.dp))
-                        Text(
-                            tab.label,
-                            color = if (active) TextHi else TextLow,
-                            fontSize = 9.sp,
-                            fontWeight = if (active) androidx.compose.ui.text.font.FontWeight.Bold else androidx.compose.ui.text.font.FontWeight.Normal,
-                        )
+                                .weight(1f)
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(
+                                    if (active) Brush.horizontalGradient(
+                                        listOf(Color(0xFFFFE566), Cyan),
+                                    ) else Brush.horizontalGradient(
+                                        listOf(Color.Transparent, Color.Transparent),
+                                    ),
+                                )
+                                .pressable {
+                                    heroSlug = null
+                                    upgradeFor = null
+                                    route = tab.route
+                                }
+                                .padding(vertical = 8.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Icon(
+                                tab.icon,
+                                contentDescription = tab.label,
+                                tint = if (active) Color(0xFF060A14) else TextLow,
+                                modifier = Modifier.size(18.dp),
+                            )
+                            Spacer(Modifier.height(3.dp))
+                            Text(
+                                tab.label,
+                                color = if (active) Color(0xFF060A14) else TextLow,
+                                fontSize = 9.sp,
+                                fontWeight = if (active) FontWeight.Black else FontWeight.Normal,
+                            )
+                        }
                     }
                 }
             }
@@ -482,13 +488,7 @@ private fun WelcomeAdbOverlay(hub: HubState, onContinue: () -> Unit) {
 private fun ProgressOverlay(hub: HubState) {
     val p = hub.progress
     if (!p.running && p.error == null && !p.finished) return
-
-    LaunchedEffect(p.finished, p.error) {
-        if (p.finished || p.error != null) {
-            delay(2100)
-            hub.dismissProgress()
-        }
-    }
+    val ctx = LocalContext.current
 
     val failed = p.error != null
     val downloading = p.phase == "downloading" && !p.finished && !failed
@@ -497,21 +497,23 @@ private fun ProgressOverlay(hub: HubState) {
         p.total > 0 -> (p.done.toFloat() / p.total).coerceIn(0f, 1f)
         else -> 0f
     }
-    val sweep by animateFloatAsState(fraction * 360f, tween(320))
-    val doneScale by animateFloatAsState(if (p.finished && !failed) 1f else 0f, tween(260))
-    val entry by animateFloatAsState(1f, tween(220))
-    val loop = rememberInfiniteTransition()
+    val sweep by animateFloatAsState(fraction * 360f, tween(320), label = "sweep")
+    val doneScale by animateFloatAsState(if (p.finished && !failed) 1f else 0f, tween(260), label = "done")
+    val loop = rememberInfiniteTransition(label = "inject")
     val spin by loop.animateFloat(
         0f, 360f,
         infiniteRepeatable(tween(1500, easing = LinearEasing), RepeatMode.Restart),
+        label = "spin",
     )
     val glow by loop.animateFloat(
         0.3f, 0.85f,
         infiniteRepeatable(tween(680, easing = LinearEasing), RepeatMode.Reverse),
+        label = "glow",
     )
     val shimmer by loop.animateFloat(
         -1f, 1f,
         infiniteRepeatable(tween(1250, easing = LinearEasing), RepeatMode.Restart),
+        label = "shimmer",
     )
 
     fun size(bytes: Long): String = when {
@@ -523,115 +525,126 @@ private fun ProgressOverlay(hub: HubState) {
     val headline = when {
         failed -> "Injection failed"
         p.finished -> "Injection complete"
-        p.phase == "downloading" -> "Downloading skin"
+        p.phase == "closing game" -> "Closing MLBB"
+        p.phase == "downloading" -> "Downloading script"
         p.phase == "preparing" -> "Preparing files"
         p.phase == "restoring" -> "Restoring backup"
-        else -> "Injecting skin"
+        else -> "Injecting files"
     }
     val detail = when {
         failed -> p.error ?: "Unknown error"
         downloading && p.bytesTotal > 0 -> "${size(p.bytes)} / ${size(p.bytesTotal)}"
         downloading -> "${size(p.bytes)} downloaded"
-        p.finished -> "${p.done} files written"
+        p.finished -> "${p.done} files written and verified"
         else -> "${p.done} / ${p.total} files"
     }
+
+    val closing = p.phase == "closing game"
+    val preparing = p.phase == "preparing"
+    val writing = p.phase == "injecting" || p.phase == "restoring"
+    val complete = p.finished && !failed
+    data class Step(val label: String, val done: Boolean, val active: Boolean)
+    val steps = listOf(
+        Step("Close MLBB", complete || downloading || preparing || writing, closing),
+        Step("Download script", complete || preparing || writing, downloading),
+        Step("Write and verify", complete, preparing || writing),
+        Step("Reopen MLBB", complete, false),
+    )
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .alpha(entry)
-            .background(Color(0xE6080B10))
+            .background(Color(0xF0060A14))
             .clickable(enabled = !p.running) { hub.dismissProgress() },
         contentAlignment = Alignment.Center,
     ) {
         Column(
             modifier = Modifier
-                .padding(28.dp)
-                .clip(RoundedCornerShape(20.dp))
+                .fillMaxWidth(0.92f)
+                .clip(RoundedCornerShape(24.dp))
                 .background(Panel)
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+                .border(
+                    1.dp,
+                    Brush.verticalGradient(listOf(Cyan.copy(alpha = 0.45f), Line)),
+                    RoundedCornerShape(24.dp),
+                )
+                .padding(22.dp),
         ) {
-            Box(contentAlignment = Alignment.Center) {
-                Canvas(
-                    modifier = Modifier
-                        .size(104.dp)
-                        .graphicsLayer { rotationZ = if (p.running) spin else 0f },
-                ) {
-                    val stroke = Stroke(width = 4.dp.toPx(), cap = StrokeCap.Round)
-                    drawArc(Line, 0f, 360f, false, style = stroke)
-                    drawArc(
-                        if (failed) Danger else Cyan,
-                        0f,
-                        when {
-                            failed -> 360f
-                            downloading && p.bytesTotal == 0L -> 92f
-                            else -> sweep
-                        },
-                        false,
-                        style = stroke,
-                    )
-                    drawCircle(
-                        Cyan.copy(alpha = glow),
-                        radius = 2.5.dp.toPx(),
-                        center = Offset(size.width, size.height / 2f),
-                    )
-                }
-                if (p.finished && !failed) {
-                    Box(
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(contentAlignment = Alignment.Center) {
+                    Canvas(
                         modifier = Modifier
-                            .size(44.dp)
-                            .clip(RoundedCornerShape(50))
-                            .background(Cyan)
-                            .graphicsLayer { scaleX = doneScale; scaleY = doneScale },
-                        contentAlignment = Alignment.Center,
+                            .size(72.dp)
+                            .graphicsLayer { rotationZ = if (p.running) spin else 0f },
                     ) {
-                        Icon(
-                            Icons.Rounded.Check,
-                            contentDescription = null,
-                            tint = Color(0xFF080B10),
-                            modifier = Modifier.size(24.dp),
+                        val stroke = Stroke(width = 4.dp.toPx(), cap = StrokeCap.Round)
+                        drawArc(Line, 0f, 360f, false, style = stroke)
+                        drawArc(
+                            if (failed) Danger else Cyan,
+                            0f,
+                            when {
+                                failed -> 360f
+                                downloading && p.bytesTotal == 0L -> 92f
+                                else -> sweep
+                            },
+                            false,
+                            style = stroke,
+                        )
+                        drawCircle(
+                            Cyan.copy(alpha = glow),
+                            radius = 2.5.dp.toPx(),
+                            center = Offset(size.width, size.height / 2f),
                         )
                     }
-                } else {
-                    Text(
-                        "X",
-                        color = if (failed) Danger else TextHi,
-                        fontSize = 23.sp,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                    )
+                    if (complete) {
+                        Box(
+                            modifier = Modifier
+                                .size(34.dp)
+                                .clip(RoundedCornerShape(50))
+                                .background(Cyan)
+                                .graphicsLayer { scaleX = doneScale; scaleY = doneScale },
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(
+                                Icons.Rounded.Check,
+                                contentDescription = null,
+                                tint = Color(0xFF060A14),
+                                modifier = Modifier.size(19.dp),
+                            )
+                        }
+                    } else {
+                        Text(
+                            "X",
+                            color = if (failed) Danger else TextHi,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Black,
+                        )
+                    }
+                }
+                Spacer(Modifier.width(16.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(headline, color = TextHi, fontSize = 17.sp, fontWeight = FontWeight.Black)
+                    Spacer(Modifier.height(3.dp))
+                    Text(detail, color = if (failed) Danger else TextLow, fontSize = 11.sp)
+                    if (p.label.isNotBlank() && !p.finished && !failed) {
+                        Spacer(Modifier.height(2.dp))
+                        Text(p.label, color = Cyan.copy(alpha = 0.8f), fontSize = 9.5.sp, maxLines = 1)
+                    }
                 }
             }
 
-            Spacer(Modifier.height(17.dp))
-            Text(
-                headline,
-                color = TextHi,
-                fontSize = 17.sp,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-            )
-            Spacer(Modifier.height(5.dp))
-            Text(
-                detail,
-                color = if (failed) Danger else TextLow,
-                fontSize = 11.sp,
-            )
-            if (p.label.isNotBlank() && !p.finished && !failed) {
-                Spacer(Modifier.height(4.dp))
-                Text(p.label, color = Cyan.copy(alpha = 0.75f), fontSize = 9.5.sp, maxLines = 1)
-            }
-            Spacer(Modifier.height(15.dp))
+            Spacer(Modifier.height(16.dp))
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(0.74f)
-                    .height(4.dp)
+                    .fillMaxWidth()
+                    .height(5.dp)
                     .clip(RoundedCornerShape(50))
                     .background(Line),
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth(fraction)
-                        .height(4.dp)
+                        .height(5.dp)
                         .clip(RoundedCornerShape(50))
                         .background(if (failed) Danger else Cyan),
                 )
@@ -639,19 +652,98 @@ private fun ProgressOverlay(hub: HubState) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth(0.28f)
-                            .height(4.dp)
+                            .height(5.dp)
                             .graphicsLayer { translationX = shimmer * 260f }
                             .clip(RoundedCornerShape(50))
-                            .background(Color.White.copy(alpha = 0.16f)),
+                            .background(Color.White.copy(alpha = 0.18f)),
                     )
                 }
             }
-            Spacer(Modifier.height(8.dp))
-            Text(
-                if (failed) "Tap anywhere to close" else if (p.finished) "Done" else "Keep the app open",
-                color = TextLow,
-                fontSize = 9.sp,
-            )
+
+            Spacer(Modifier.height(16.dp))
+            for (step in steps) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(18.dp)
+                            .clip(RoundedCornerShape(50))
+                            .background(
+                                when {
+                                    step.done -> Cyan
+                                    step.active -> Cyan.copy(alpha = 0.18f)
+                                    else -> PanelHi
+                                },
+                            )
+                            .border(
+                                1.dp,
+                                if (step.active) Cyan else Line,
+                                RoundedCornerShape(50),
+                            ),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        if (step.done) {
+                            Icon(
+                                Icons.Rounded.Check,
+                                contentDescription = null,
+                                tint = Color(0xFF060A14),
+                                modifier = Modifier.size(11.dp),
+                            )
+                        }
+                    }
+                    Spacer(Modifier.width(10.dp))
+                    Text(
+                        step.label,
+                        color = when {
+                            step.done -> TextHi
+                            step.active -> Cyan
+                            else -> TextLow
+                        },
+                        fontSize = 11.5.sp,
+                        fontWeight = if (step.active) FontWeight.Bold else FontWeight.Normal,
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+            when {
+                complete -> Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(
+                        onClick = { hub.dismissProgress() },
+                        modifier = Modifier.weight(1f).height(44.dp),
+                        shape = RoundedCornerShape(13.dp),
+                    ) {
+                        Text("Done", color = TextHi, fontWeight = FontWeight.SemiBold)
+                    }
+                    Button(
+                        onClick = {
+                            GameControl.launch(ctx)
+                            hub.dismissProgress()
+                        },
+                        modifier = Modifier.weight(1f).height(44.dp),
+                        shape = RoundedCornerShape(13.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Cyan, contentColor = Color(0xFF060A14)),
+                    ) {
+                        Text("Open MLBB", fontWeight = FontWeight.Bold)
+                    }
+                }
+                failed -> Button(
+                    onClick = { hub.dismissProgress() },
+                    modifier = Modifier.fillMaxWidth().height(44.dp),
+                    shape = RoundedCornerShape(13.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Danger, contentColor = TextHi),
+                ) {
+                    Text("Close", fontWeight = FontWeight.Bold)
+                }
+                else -> Text(
+                    "Keep the app open while files are written",
+                    color = TextLow,
+                    fontSize = 9.5.sp,
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                )
+            }
         }
     }
 }

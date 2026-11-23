@@ -10,7 +10,7 @@ object Config {
     const val ASSETS_URL = "https://github.com/$OWNER/$ASSETS_REPO"
     const val DEV = "Gab"
     const val PACKAGE = "official.nixhub.assistant"
-    const val VERSION = "1.8.0"
+    const val VERSION = "1.9.0"
     const val TG_CHANNEL = "t.me/toolsdropdaw"
     const val TG_OWNER = "@xvanngdxc"
     const val TG_CHANNEL_URL = "https://t.me/toolsdropdaw"

@@ -18,6 +18,7 @@ interface Storage {
     fun write(rel: String, bytes: ByteArray): Boolean
     fun walk(): List<String>
     fun size(rel: String): Long? = read(rel)?.size?.toLong()
+    fun hash(rel: String): String? = null
 
     /** Shell access for game lifecycle control. Null for document-tree storage. */
     fun shell(cmd: String, input: ByteArray? = null): Pair<Int, ByteArray>? = null
@@ -158,6 +159,12 @@ class RootStorage(private val base: String) : Storage {
         return out.toString(Charsets.UTF_8).trim().toLongOrNull()
     }
 
+    override fun hash(rel: String): String? {
+        val (code, out) = sh("sha256sum ${q(full(rel))} 2>/dev/null")
+        if (code != 0) return null
+        return out.toString(Charsets.UTF_8).trim().substringBefore(' ').takeIf { it.length == 64 }
+    }
+
     override fun walk(): List<String> {
         val (code, out) = sh("find ${q(base)} -type f 2>/dev/null")
         if (code != 0) return emptyList()
@@ -230,6 +237,12 @@ class ShizukuStorage(private val base: String) : Storage {
         val (code, out) = sh("wc -c < ${q(full(rel))} 2>/dev/null")
         if (code != 0) return null
         return out.toString(Charsets.UTF_8).trim().toLongOrNull()
+    }
+
+    override fun hash(rel: String): String? {
+        val (code, out) = sh("sha256sum ${q(full(rel))} 2>/dev/null")
+        if (code != 0) return null
+        return out.toString(Charsets.UTF_8).trim().substringBefore(' ').takeIf { it.length == 64 }
     }
 
     override fun walk(): List<String> {

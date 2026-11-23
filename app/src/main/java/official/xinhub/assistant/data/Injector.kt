@@ -5,6 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.io.File
+import java.security.MessageDigest
 import java.util.zip.ZipInputStream
 
 /**
@@ -180,7 +181,9 @@ class Injector(private val ctx: Context, private val prefs: Prefs) {
             val sizeOk = observed == null || observed < 0L ||
                 observed == bytes.size.toLong() ||
                 (observed == 0L && bytes.isNotEmpty())
-            val ok = wrote && sizeOk
+            val observedHash = storage.hash(rel)
+            val hashOk = observedHash == null || observedHash.equals(sha256(bytes), true)
+            val ok = wrote && sizeOk && hashOk
             if (ok) {
                 writtenTargets.add(rel)
             } else {
@@ -378,6 +381,10 @@ class Injector(private val ctx: Context, private val prefs: Prefs) {
 
     companion object {
         private const val MAX_ENTRY = 96 * 1024 * 1024
+
+        private fun sha256(bytes: ByteArray): String =
+            MessageDigest.getInstance("SHA-256").digest(bytes)
+                .joinToString("") { "%02x".format(it) }
 
         private val KNOWN_ROOTS = setOf(
             "art", "audio", "ui", "document", "astcinpack", "nix-advanced",

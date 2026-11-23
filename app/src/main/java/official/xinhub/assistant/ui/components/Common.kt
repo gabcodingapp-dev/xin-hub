@@ -29,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -64,7 +65,11 @@ fun Modifier.pressable(enabled: Boolean, onClick: () -> Unit): Modifier {
 
 @Composable
 fun XinBackdrop(content: @Composable () -> Unit) {
-    Box(modifier = Modifier.background(Void)) { content() }
+    Box(
+        modifier = Modifier.background(
+            Brush.verticalGradient(listOf(Color(0xFF0A1226), Void, Color(0xFF04060C))),
+        ),
+    ) { content() }
 }
 
 @Composable
@@ -74,9 +79,13 @@ fun GlassCard(
     content: @Composable () -> Unit,
 ) {
     var card = modifier
-        .clip(RoundedCornerShape(14.dp))
-        .background(Panel)
-        .border(1.dp, Line, RoundedCornerShape(14.dp))
+        .clip(RoundedCornerShape(16.dp))
+        .background(Brush.verticalGradient(listOf(PanelHi, Panel)))
+        .border(
+            1.dp,
+            Brush.verticalGradient(listOf(Line, Line.copy(alpha = 0.35f))),
+            RoundedCornerShape(16.dp),
+        )
     if (onClick != null) card = card.pressable(onClick)
     Box(card) { content() }
 }
@@ -109,7 +118,7 @@ fun SectionHeader(title: String, subtitle: String? = null, action: String? = nul
         if (action != null) {
             Text(
                 action,
-                color = Color(0xFF3DDC97),
+                color = Color(0xFFFFD60A),
                 fontSize = 11.sp,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.clickable { onAction() },
